@@ -1,73 +1,69 @@
-from collections import defaultdict
-from copy import deepcopy
-
+from typing import List, Tuple
+from domain.player import Player
 from config.trainings import TRAININGS
-from domain.training_simulator import simulate_training
-from domain.balance_metric import white_balance_score
 
+MAX_SKILL_LEVEL = 400
+TRAINING_GAIN = 10  # фиксированный прирост за тренировку
 
 class TrainingPlanner:
-    def __init__(
-        self,
-        player,
-        max_steps: int = 50,
-        gray_penalty: int = 3,
-    ):
+    def __init__(self, player: Player):
         self.player = player
-        self.max_steps = max_steps
-        self.gray_penalty = gray_penalty
 
-    def build_plan(self) -> dict[str, int]:
+    def plan(self, max_cycles: int = 10) -> List[Tuple[str, str, int]]:
         """
-        Возвращает:
-        {
-            training_id: repeats_count
-        }
+        Формирует план тренировок для балансировки всех белых навыков.
+        Возвращает список кортежей:
+        (id тренировки, name, количество повторений)
         """
-
-        current_skills = deepcopy(self.player.skills)
+        plan: List[Tuple[str, str, int]] = []
+        player_skills = self.player.skills.copy()
         white_skills = self.player.white_skills
-        gray_skills = self.player.gray_skills
+        trainings = TRAININGS
 
-        plan: dict[str, int] = defaultdict(int)
+        # Определяем сколько раз нужно качать каждый белый навык до 400
+        deficit = {s: MAX_SKILL_LEVEL - player_skills[s] for s in white_skills}
 
-        for _ in range(self.max_steps):
-            current_balance = white_balance_score(
-                current_skills, white_skills
-            )
+        # Простой greedy-подход:
+        # На каждом шаге выбираем тренировку, которая качает максимальное количество
+        # белых навыков с текущим отставанием и минимально затрагивает серые
+        while any(deficit[s] > 0 for s in white_skills) and len(plan) < max_cycles * len(trainings):
+            best_training = None
+            best_white_hits = 0
+            best_gray_hits = float('inf')
+            for tr_id, data in trainings.items():
+                tr_skills = set(data["skills"])
+                white_hit = tr_skills & white_skills
+                gray_hit = tr_skills & self.player.gray_skills
 
-            best_training_id = None
-            best_score = current_balance
+                # считаем сколько навыков реально нужно качать (только те, что ниже MAX_SKILL_LEVEL)
+                effective_white_hits = sum(1 for s in white_hit if deficit[s] > 0)
 
-            for tr_id, tr_data in TRAININGS.items():
-                tr_skills = set(tr_data["skills"])
+                if effective_white_hits == 0:
+                    continue  # не качает нужных навыков
 
-                # игнорируем тренировки, которые не качают белые навыки
-                if not (tr_skills & white_skills):
-                    continue
+                # Выбираем тренировку с максимальным полезным эффектом, минимально трогая серые
+                if (effective_white_hits > best_white_hits) or \
+                   (effective_white_hits == best_white_hits and len(gray_hit) < best_gray_hits):
+                    best_training = (tr_id, data)
+                    best_white_hits = effective_white_hits
+                    best_gray_hits = len(gray_hit)
 
-                simulated = simulate_training(current_skills, tr_id)
+            if not best_training:
+                break  # нет подходящих тренировок
 
-                new_balance = white_balance_score(
-                    simulated, white_skills
-                )
+            tr_id, data = best_training
 
-                # штраф за серые навыки
-                gray_hits = len(tr_skills & gray_skills)
-                total_score = new_balance + gray_hits * self.gray_penalty
+            # Применяем тренировку (симуляция)
+            for s in data["skills"]:
+                if s in deficit:
+                    player_skills[s] = min(MAX_SKILL_LEVEL, player_skills[s] + TRAINING_GAIN)
+                    deficit[s] = MAX_SKILL_LEVEL - player_skills[s]
 
-                if total_score < best_score:
-                    best_score = total_score
-                    best_training_id = tr_id
+            # Добавляем в план
+            if plan and plan[-1][0] == tr_id:
+                # увеличиваем счетчик повторений
+                plan[-1] = (plan[-1][0], plan[-1][1], plan[-1][2] + 1)
+            else:
+                plan.append((tr_id, data["name"], 1))
 
-            # если улучшить баланс больше нельзя — выходим
-            if best_training_id is None:
-                break
-
-            # применяем лучшую тренировку
-            current_skills = simulate_training(
-                current_skills, best_training_id
-            )
-            plan[best_training_id] += 1
-
-        return dict(plan)
+        return plan

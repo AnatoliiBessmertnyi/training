@@ -1,17 +1,22 @@
+from config.positions import POSITIONS
+from config.skills import SKILLS
+from config.trainings import TRAININGS
 from domain.player import Player
 from domain.training_planner import TrainingPlanner
-from config.skills import SKILLS
-from config.positions import POSITIONS
-from config.trainings import TRAININGS
 
 
 def main():
-    print("=== Помощник по прокачке игрока ===")
+    print("=== Помощник по прокачке игрока ===\n")
 
-    # 1. Позиции игрока
+    # Позиции игрока (хардкод)
     positions = ["ST", "AMC"]
 
-    # 2. Навыки игрока (вводятся ТОЛЬКО реальные)
+    # Белые навыки для этих позиций
+    white_skills = set()
+    for pos in positions:
+        white_skills.update(POSITIONS[pos]["white_skills"])
+
+    # Захардкоженные значения навыков
     player_skills = {
         "tackling": 35,
         "marking": 44,
@@ -30,56 +35,39 @@ def main():
         "creativity": 200,
     }
 
-    # 3. Автозаполнение отсутствующих навыков минимальным значением
+    # Заполняем серые навыки минимальным значением 1
     for skill_id in SKILLS:
         if skill_id not in player_skills:
             player_skills[skill_id] = 1
 
-    # 4. Создание игрока
-    player = Player(
-        name="Игрок",
-        positions=positions,
-        skills=player_skills,
-    )
+    # Создаём игрока
+    player = Player(name="Игрок", positions=positions, skills=player_skills)
 
-    # 5. Вывод белых навыков
-    print("\nПозиции игрока:", positions)
+    # Вывод белых навыков
+    print(f"Позиции игрока: {positions}")
     print("Белые навыки:")
+    for s in sorted(white_skills):
+        print(f"  - {SKILLS[s]}: {player.skills[s]}")
 
-    for skill_id in sorted(player.white_skills):
-        value = player.skills[skill_id]
-        print(f"  - {SKILLS[skill_id]}: {value}")
-
-    # 6. Слабые белые навыки
-    weakest = player.weakest_white_skills(5)
-
+    # Определяем слабые белые навыки (для справки)
+    weakest = sorted(white_skills, key=lambda s: player.skills[s])[:5]
     print("\nСамые слабые белые навыки:")
-    for skill_id in weakest:
-        print(f"  - {SKILLS[skill_id]}: {player.skills[skill_id]}")
+    for s in weakest:
+        print(f"  - {SKILLS[s]}: {player.skills[s]}")
 
-    # 7. Планирование тренировок
-    planner = TrainingPlanner(
-        player=player,
-        max_steps=30,
-        gray_penalty=3,
-    )
+    # Формируем план тренировок
+    planner = TrainingPlanner(player)
+    plan = planner.plan(max_cycles=20)
 
-    plan = planner.build_plan()
-
-    # 8. Вывод плана
+    # Вывод плана
     print("\n=== Рекомендуемый план тренировок ===")
-
     if not plan:
-        print("Не удалось улучшить баланс белых навыков")
-        return
-
-    for tr_id, count in plan.items():
-        tr = TRAININGS[tr_id]
-        skills_ru = [SKILLS[s] for s in tr["skills"]]
-
-        print(f"- {tr['name']} ({count} раз)")
-        print(f"  Качает навыки: {skills_ru}")
-
+        print("Нет подходящих тренировок для балансировки белых навыков")
+    else:
+        for tr_id, name, count in plan:
+            skills_covered = TRAININGS[tr_id]["skills"]
+            print(f"- {name} ({count} раз)")
+            print(f"  Качает навыки: {[SKILLS[s] for s in skills_covered]}")
 
 if __name__ == "__main__":
     main()
