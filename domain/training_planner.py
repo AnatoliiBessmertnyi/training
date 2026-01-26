@@ -1,7 +1,9 @@
-from typing import Dict, List, Tuple
+import math
 from dataclasses import dataclass
-from domain.player import Player
+from typing import Dict, List, Tuple
+
 from config.trainings import TRAININGS
+from domain.player import Player
 
 MAX_SKILL_LEVEL = 400
 BASE_TRAINING_GAIN = 10
@@ -85,7 +87,7 @@ class TrainingPlanner:
             )
             
             # Учитываем штраф за серые навыки
-            gray_penalty = len(training_gray_skills) * 5  # вес штрафа можно настроить
+            gray_penalty = math.log(len(training_gray_skills) + 1) * 5  # вес штрафа можно настроить
             final_score = improvement_score - gray_penalty
             
             if final_score > best_improvement:
