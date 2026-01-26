@@ -56,12 +56,6 @@ def main():
     print("Фронтенд-приложение для планирования тренировок игроков")
     print("=" * 50)
     
-    # Ask if user wants to add players
-    add_players = input("Хотите ввести 11 игроков вручную? (y/n): ").lower().strip()
-    
-    if add_players == 'y':
-        input_players()
-    
     print("Запуск веб-сервера...")
     print("Откройте в браузере: http://localhost:5000")
     print("Для остановки сервера нажмите Ctrl+C\n")
