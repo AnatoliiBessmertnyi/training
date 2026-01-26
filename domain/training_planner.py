@@ -3,88 +3,111 @@ from domain.player import Player
 from config.trainings import TRAININGS
 
 MAX_SKILL_LEVEL = 400
-TRAINING_GAIN = 10  # фиксированный прирост за тренировку
+BASE_TRAINING_GAIN = 10
 
 
 class TrainingPlanner:
     def __init__(self, player: Player):
         self.player = player
+        self.white_skills = set(player.white_skills)
+        self.gray_skills = set(player.gray_skills)
 
     def plan(self, max_cycles: int = 10) -> List[Tuple[str, str, int]]:
         """
-        Формирует план тренировок для балансировки всех белых навыков.
-
-        Возвращает список кортежей:
-        (id тренировки, name, количество повторений)
+        Формирует план тренировок для равномерной прокачки белых навыков.
+        Возвращает список:
+        (training_id, name, repetitions)
         """
         plan: List[Tuple[str, str, int]] = []
 
-        player_skills = self.player.skills.copy()
-        white_skills = self.player.white_skills
-        gray_skills = self.player.gray_skills
-        trainings = TRAININGS
+        # копия, чтобы симулировать рост
+        skills = self.player.skills.copy()
 
-        # Сколько нужно добрать до капа по каждому белому навыку
-        deficit = {s: MAX_SKILL_LEVEL - player_skills[s] for s in white_skills}
+        deficit = {
+            s: MAX_SKILL_LEVEL - skills[s]
+            for s in self.white_skills
+        }
 
-        while (
-            any(deficit[s] > 0 for s in white_skills)
-            and len(plan) < max_cycles * len(trainings)
-        ):
-            best_training = None
+        max_steps = max_cycles * len(TRAININGS)
+
+        while any(v > 0 for v in deficit.values()) and len(plan) < max_steps:
+            best = None
             best_score = -1
-            best_gray_hits = float("inf")
 
-            for tr_id, data in trainings.items():
-                tr_skills = set(data["skills"])
+            for tr_id, tr in TRAININGS.items():
+                trained = set(tr["skills"])
 
-                white_hit = tr_skills & white_skills
-                if not white_hit:
+                white_hits = trained & self.white_skills
+                gray_hits = trained & self.gray_skills
+
+                # 1. минимум 2 белых навыка
+                if len(white_hits) < 2:
                     continue
 
-                # Сколько реально нужных белых навыков качает
-                effective_white_hits = sum(
-                    1 for s in white_hit if deficit[s] > 0
-                )
-                if effective_white_hits == 0:
+                # 2. реально нужные белые навыки
+                effective_white = [
+                    s for s in white_hits if deficit.get(s, 0) > 0
+                ]
+                if not effective_white:
                     continue
 
-                # Потолок тренировки — самый высокий белый навык в её списке
-                training_ceiling = max(
-                    player_skills[s] for s in white_hit
-                )
+                # 3. нелинейный потолок
+                ceiling = max(skills[s] for s in white_hits)
+                ceiling_multiplier = self._ceiling_multiplier(ceiling)
 
-                # Эффективность тренировки
-                score = effective_white_hits / training_ceiling
+                # 4. полезность
+                raw_gain = len(effective_white) * BASE_TRAINING_GAIN
 
-                gray_hit = tr_skills & gray_skills
+                # 5. штраф за серые
+                gray_penalty = 1 + (len(gray_hits) * 0.6)
 
-                if (
-                    score > best_score
-                    or (score == best_score and len(gray_hit) < best_gray_hits)
-                ):
-                    best_training = (tr_id, data)
+                # 6. финальный скор
+                score = (raw_gain * len(white_hits)) / (ceiling_multiplier * gray_penalty)
+
+                if score > best_score:
                     best_score = score
-                    best_gray_hits = len(gray_hit)
+                    best = (tr_id, tr)
 
-            if not best_training:
+            if not best:
                 break
 
-            tr_id, data = best_training
+            tr_id, tr = best
 
-            # Симулируем применение тренировки
-            for s in data["skills"]:
+            # применяем тренировку
+            for s in tr["skills"]:
                 if s in deficit and deficit[s] > 0:
-                    player_skills[s] = min(
+                    skills[s] = min(
                         MAX_SKILL_LEVEL,
-                        player_skills[s] + TRAINING_GAIN,
+                        skills[s] + BASE_TRAINING_GAIN
                     )
-                    deficit[s] = MAX_SKILL_LEVEL - player_skills[s]
+                    deficit[s] = MAX_SKILL_LEVEL - skills[s]
 
-            # Склеиваем одинаковые тренировки подряд
+            # агрегируем план
             if plan and plan[-1][0] == tr_id:
                 plan[-1] = (plan[-1][0], plan[-1][1], plan[-1][2] + 1)
             else:
-                plan.append((tr_id, data["name"], 1))
+                plan.append((tr_id, tr["name"], 1))
 
         return plan
+
+    @staticmethod
+    def _ceiling_multiplier(value: int) -> float:
+        """
+        Нелинейный потолок прокачки.
+        Значения легко масштабируются в будущем.
+        """
+        if value < 60:
+            return 0.8
+        if value < 100:
+            return 1.0
+        if value < 140:
+            return 1.2
+        if value < 180:
+            return 1.4
+        if value < 220:
+            return 1.6
+        if value < 260:
+            return 1.8
+        if value < 300:
+            return 2.0
+        return 2.2

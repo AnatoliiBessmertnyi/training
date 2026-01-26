@@ -10,30 +10,50 @@ def main():
 
     # Позиции игрока (хардкод)
     # positions = ["ST", "AMC"]
-    positions = ["DC"]
+    # positions = ["DC"]
+    positions = ["AMC", "MC", "DMC"]
 
     # Белые навыки для этих позиций
     white_skills = set()
     for pos in positions:
         white_skills.update(POSITIONS[pos]["white_skills"])
 
-    # Захардкоженные значения навыков
+    # Захардкоженные значения навыков для DC
+    # player_skills = {
+    #     "tackling": 271,
+    #     "marking": 247,
+    #     "positioning": 240,
+    #     "heading": 223,
+    #     "bravery": 253,
+    #     "passing": 33,
+    #     "dribbling": 15,
+    #     "cross": 20,
+    #     "finishing": 32,
+    #     "shooting": 24,
+    #     "physical": 286,
+    #     "strength": 302,
+    #     "aggressiveness": 276,
+    #     "pace": 1,
+    #     "creativity": 1,
+    # }
+
+    # # Захардкоженные значения навыков для AMC, MC, DMC
     player_skills = {
-        "tackling": 271,
-        "marking": 247,
-        "positioning": 240,
-        "heading": 223,
-        "bravery": 253,
-        "passing": 33,
-        "dribbling": 15,
-        "cross": 20,
-        "finishing": 32,
-        "shooting": 24,
-        "physical": 286,
-        "strength": 302,
-        "aggressiveness": 276,
-        "pace": 1,
-        "creativity": 1,
+        "tackling": 67,
+        "marking": 55,
+        "positioning": 60,
+        "heading": 85,
+        "bravery": 71,
+        "passing": 87,
+        "dribbling": 70,
+        "cross": 50,
+        "finishing": 73,
+        "shooting": 86,
+        "physical": 79,
+        "strength": 54,
+        "aggressiveness": 54,
+        "pace": 84,
+        "creativity": 72,
     }
 
     # Заполняем серые навыки минимальным значением 1
