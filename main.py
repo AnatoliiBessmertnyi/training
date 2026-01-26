@@ -1,94 +1,76 @@
+from web.app import app
+from storage.player_repository import PlayerRepository
 from config.positions import POSITIONS
 from config.skills import SKILLS
-from config.trainings import TRAININGS
-from domain.player import Player
-from domain.training_planner import TrainingPlanner
+import sys
+
+
+def input_players():
+    """Interactive function to input 11 players manually"""
+    repo = PlayerRepository()
+    
+    print("=== Ввод данных для 11 игроков ===\n")
+    
+    for i in range(1, 12):
+        print(f"--- Игрок #{i} ---")
+        
+        # Get player name
+        name = input(f"Введите имя игрока #{i}: ").strip()
+        if not name:
+            name = f"Игрок {i}"
+        
+        # Show available positions
+        print("\nДоступные позиции:")
+        position_list = list(POSITIONS.keys())
+        for idx, pos in enumerate(position_list):
+            print(f"{idx + 1}. {pos}")
+        
+        # Get player positions
+        positions_input = input(f"\nВведите номера позиций через запятую (например: 1,3,5): ").strip()
+        selected_positions = []
+        
+        if positions_input:
+            try:
+                pos_indices = [int(x.strip()) - 1 for x in positions_input.split(',')]
+                selected_positions = [position_list[idx] for idx in pos_indices if 0 <= idx < len(position_list)]
+            except ValueError:
+                print("Ошибка ввода, используем первую позицию по умолчанию")
+                selected_positions = [position_list[0]] if position_list else []
+        else:
+            # Default to first position if nothing entered
+            selected_positions = [position_list[0]] if position_list else []
+        
+        if not selected_positions:
+            selected_positions = [position_list[0]]
+        
+        print(f"Выбраны позиции: {selected_positions}")
+        
+        # Create player
+        player = repo.create(name, selected_positions)
+        print(f"Игрок '{name}' добавлен с ID: {player['id']}\n")
+    
+    print("Все 11 игроков успешно добавлены!\n")
 
 
 def main():
-    print("=== Помощник по прокачке игрока ===\n")
+    print("Фронтенд-приложение для планирования тренировок игроков")
+    print("=" * 50)
+    
+    # Ask if user wants to add players
+    add_players = input("Хотите ввести 11 игроков вручную? (y/n): ").lower().strip()
+    
+    if add_players == 'y':
+        input_players()
+    
+    print("Запуск веб-сервера...")
+    print("Откройте в браузере: http://localhost:5000")
+    print("Для остановки сервера нажмите Ctrl+C\n")
+    
+    try:
+        app.run(host='0.0.0.0', port=5000, debug=False)
+    except KeyboardInterrupt:
+        print("\nСервер остановлен.")
 
-    # Позиции игрока (хардкод)
-    # positions = ["ST", "AMC"]
-    # positions = ["DC"]
-    positions = ["AMC", "MC", "DMC"]
-
-    # Белые навыки для этих позиций
-    white_skills = set()
-    for pos in positions:
-        white_skills.update(POSITIONS[pos]["white_skills"])
-
-    # Захардкоженные значения навыков для DC
-    # player_skills = {
-    #     "tackling": 271,
-    #     "marking": 247,
-    #     "positioning": 240,
-    #     "heading": 223,
-    #     "bravery": 253,
-    #     "passing": 33,
-    #     "dribbling": 15,
-    #     "cross": 20,
-    #     "finishing": 32,
-    #     "shooting": 24,
-    #     "physical": 286,
-    #     "strength": 302,
-    #     "aggressiveness": 276,
-    #     "pace": 1,
-    #     "creativity": 1,
-    # }
-
-    # # Захардкоженные значения навыков для AMC, MC, DMC
-    player_skills = {
-        "tackling": 67,
-        "marking": 55,
-        "positioning": 60,
-        "heading": 85,
-        "bravery": 71,
-        "passing": 87,
-        "dribbling": 70,
-        "cross": 50,
-        "finishing": 73,
-        "shooting": 86,
-        "physical": 79,
-        "strength": 54,
-        "aggressiveness": 54,
-        "pace": 84,
-        "creativity": 72,
-    }
-
-    # Заполняем серые навыки минимальным значением 1
-    for skill_id in SKILLS:
-        if skill_id not in player_skills:
-            player_skills[skill_id] = 1
-
-    # Создаём игрока
-    player = Player(name="Игрок", positions=positions, skills=player_skills)
-
-    # Вывод белых навыков
-    print(f"Позиции игрока: {positions}")
-    print("Белые навыки:")
-    for s in sorted(white_skills):
-        print(f"  - {SKILLS[s]}: {player.skills[s]}")
-
-    # Определяем слабые белые навыки (для справки)
-    weakest = sorted(white_skills, key=lambda s: player.skills[s])[:5]
-    print("\nСамые слабые белые навыки:")
-    for s in weakest:
-        print(f"  - {SKILLS[s]}: {player.skills[s]}")
-
-    # Формируем план тренировок
-    planner = TrainingPlanner(player)
-    plan = planner.plan(max_trainings=20)
-
-    # Вывод плана
-    print("\n=== Рекомендуемый план тренировок ===")
-    if not plan:
-        print("Нет подходящих тренировок для балансировки белых навыков")
-    else:
-        for item in plan:
-            skills_covered = TRAININGS[item.training_id]["skills"]
-            print(f"- {item.name} ({item.repeats} раз)")
-            print(f"  Качает навыки: {[SKILLS[s] for s in skills_covered]}")
 
 if __name__ == "__main__":
     main()
