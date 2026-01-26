@@ -1,9 +1,17 @@
-from typing import List, Tuple
+from typing import Dict, List, Tuple
+from dataclasses import dataclass
 from domain.player import Player
 from config.trainings import TRAININGS
 
 MAX_SKILL_LEVEL = 400
 BASE_TRAINING_GAIN = 10
+
+
+@dataclass
+class TrainingPlanItem:
+    training_id: str
+    name: str
+    repeats: int
 
 
 class TrainingPlanner:
@@ -12,102 +20,132 @@ class TrainingPlanner:
         self.white_skills = set(player.white_skills)
         self.gray_skills = set(player.gray_skills)
 
-    def plan(self, max_cycles: int = 10) -> List[Tuple[str, str, int]]:
+    def plan(self, max_trainings: int = 50) -> List[TrainingPlanItem]:
         """
         Формирует план тренировок для равномерной прокачки белых навыков.
-        Возвращает список:
-        (training_id, name, repetitions)
+        Возвращает список TrainingPlanItem.
         """
-        plan: List[Tuple[str, str, int]] = []
+        plan_items: Dict[str, TrainingPlanItem] = {}
 
         # копия, чтобы симулировать рост
-        skills = self.player.skills.copy()
+        simulated_skills = self.player.skills.copy()
 
-        deficit = {
-            s: MAX_SKILL_LEVEL - skills[s]
-            for s in self.white_skills
-        }
-
-        max_steps = max_cycles * len(TRAININGS)
-
-        while any(v > 0 for v in deficit.values()) and len(plan) < max_steps:
-            best = None
-            best_score = -1
-
-            for tr_id, tr in TRAININGS.items():
-                trained = set(tr["skills"])
-
-                white_hits = trained & self.white_skills
-                gray_hits = trained & self.gray_skills
-
-                # 1. минимум 2 белых навыка
-                if len(white_hits) < 2:
-                    continue
-
-                # 2. реально нужные белые навыки
-                effective_white = [
-                    s for s in white_hits if deficit.get(s, 0) > 0
-                ]
-                if not effective_white:
-                    continue
-
-                # 3. нелинейный потолок
-                ceiling = max(skills[s] for s in white_hits)
-                ceiling_multiplier = self._ceiling_multiplier(ceiling)
-
-                # 4. полезность
-                raw_gain = len(effective_white) * BASE_TRAINING_GAIN
-
-                # 5. штраф за серые
-                gray_penalty = 1 + (len(gray_hits) * 0.6)
-
-                # 6. финальный скор
-                score = (raw_gain * len(white_hits)) / (ceiling_multiplier * gray_penalty)
-
-                if score > best_score:
-                    best_score = score
-                    best = (tr_id, tr)
-
-            if not best:
+        for _ in range(max_trainings):
+            # Находим лучшую тренировку для следующего шага
+            best_training_id = self._find_best_training(simulated_skills)
+            
+            if best_training_id is None:
                 break
-
-            tr_id, tr = best
-
-            # применяем тренировку
-            for s in tr["skills"]:
-                if s in deficit and deficit[s] > 0:
-                    skills[s] = min(
-                        MAX_SKILL_LEVEL,
-                        skills[s] + BASE_TRAINING_GAIN
-                    )
-                    deficit[s] = MAX_SKILL_LEVEL - skills[s]
-
-            # агрегируем план
-            if plan and plan[-1][0] == tr_id:
-                plan[-1] = (plan[-1][0], plan[-1][1], plan[-1][2] + 1)
+                
+            # Применяем тренировку к симулируемым навыкам
+            self._apply_training(simulated_skills, best_training_id)
+            
+            # Добавляем тренировку в план
+            if best_training_id in plan_items:
+                plan_items[best_training_id].repeats += 1
             else:
-                plan.append((tr_id, tr["name"], 1))
+                training_data = TRAININGS[best_training_id]
+                plan_items[best_training_id] = TrainingPlanItem(
+                    training_id=best_training_id,
+                    name=training_data["name"],
+                    repeats=1
+                )
 
-        return plan
+        return list(plan_items.values())
 
-    @staticmethod
-    def _ceiling_multiplier(value: int) -> float:
+    def _find_best_training(self, skills: Dict[str, int]) -> str | None:
         """
-        Нелинейный потолок прокачки.
-        Значения легко масштабируются в будущем.
+        Находит тренировку, которая лучше всего улучшит равномерность белых навыков.
         """
-        if value < 60:
-            return 0.8
-        if value < 100:
-            return 1.0
-        if value < 140:
-            return 1.2
-        if value < 180:
-            return 1.4
-        if value < 220:
-            return 1.6
-        if value < 260:
-            return 1.8
-        if value < 300:
-            return 2.0
-        return 2.2
+        # Получаем текущие значения белых навыков
+        white_skill_values = {skill: skills[skill] for skill in self.white_skills}
+        
+        if not white_skill_values:
+            return None
+            
+        min_white = min(white_skill_values.values())
+        max_white = max(white_skill_values.values())
+        
+        best_training_id = None
+        best_improvement = -float('inf')
+        
+        for tr_id, tr_data in TRAININGS.items():
+            # Проверяем, есть ли белые навыки в этой тренировке
+            training_white_skills = set(tr_data["skills"]) & self.white_skills
+            if not training_white_skills:
+                continue
+                
+            # Проверяем, есть ли серые навыки (чем их больше, тем хуже)
+            training_gray_skills = set(tr_data["skills"]) & self.gray_skills
+            
+            # Симулируем применение тренировки
+            simulated_after = skills.copy()
+            improvement_score = self._calculate_improvement(
+                simulated_after, tr_data, min_white, max_white
+            )
+            
+            # Учитываем штраф за серые навыки
+            gray_penalty = len(training_gray_skills) * 5  # вес штрафа можно настроить
+            final_score = improvement_score - gray_penalty
+            
+            if final_score > best_improvement:
+                best_improvement = final_score
+                best_training_id = tr_id
+        
+        return best_training_id
+
+    def _calculate_improvement(
+        self, 
+        skills: Dict[str, int], 
+        training_data: Dict, 
+        current_min: int, 
+        current_max: int
+    ) -> float:
+        """
+        Вычисляет улучшение равномерности белых навыков при применении тренировки.
+        Положительное значение означает улучшение.
+        """
+        # Сохраняем текущие значения белых навыков до тренировки
+        original_white_values = {s: skills[s] for s in self.white_skills}
+        
+        # Применяем тренировку
+        temp_skills = skills.copy()
+        self._apply_training(temp_skills, training_data)
+        
+        # Получаем новые значения белых навыков
+        new_white_values = {s: temp_skills[s] for s in self.white_skills}
+        
+        # Вычисляем новую разницу между min и max белыми навыками
+        new_min = min(new_white_values.values())
+        new_max = max(new_white_values.values())
+        
+        # Улучшение = разница между старой и новой разницами
+        # Если разница уменьшилась, это улучшение
+        original_gap = current_max - current_min
+        new_gap = new_max - new_min
+        
+        gap_improvement = original_gap - new_gap  # положительное значение = улучшение
+        
+        # Также учитываем среднее значение белых навыков (чем выше, тем лучше)
+        original_avg = sum(original_white_values.values()) / len(original_white_values)
+        new_avg = sum(new_white_values.values()) / len(new_white_values)
+        avg_improvement = new_avg - original_avg
+        
+        # Комбинируем улучшения
+        total_improvement = gap_improvement * 2 + avg_improvement * 0.5  # веса можно настроить
+        
+        return total_improvement
+
+    def _apply_training(self, skills: Dict[str, int], training_data_or_id: Dict | str) -> None:
+        """
+        Применяет тренировку к переданным навыкам (влияет напрямую на переданный словарь).
+        """
+        if isinstance(training_data_or_id, str):
+            training_data = TRAININGS[training_data_or_id]
+        else:
+            training_data = training_data_or_id
+            
+        for skill_id in training_data["skills"]:
+            if skill_id in skills:
+                # Увеличиваем навык с учетом максимального порога
+                skills[skill_id] = min(MAX_SKILL_LEVEL, skills[skill_id] + BASE_TRAINING_GAIN)

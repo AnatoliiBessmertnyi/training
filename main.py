@@ -78,16 +78,16 @@ def main():
 
     # Формируем план тренировок
     planner = TrainingPlanner(player)
-    plan = planner.plan(max_cycles=20)
+    plan = planner.plan(max_trainings=20)
 
     # Вывод плана
     print("\n=== Рекомендуемый план тренировок ===")
     if not plan:
         print("Нет подходящих тренировок для балансировки белых навыков")
     else:
-        for tr_id, name, count in plan:
-            skills_covered = TRAININGS[tr_id]["skills"]
-            print(f"- {name} ({count} раз)")
+        for item in plan:
+            skills_covered = TRAININGS[item.training_id]["skills"]
+            print(f"- {item.name} ({item.repeats} раз)")
             print(f"  Качает навыки: {[SKILLS[s] for s in skills_covered]}")
 
 if __name__ == "__main__":
