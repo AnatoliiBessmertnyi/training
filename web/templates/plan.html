@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}{{ player.name }} - План тренировок - Тренеровочный планер{% endblock %}
+
+{% block content %}
+<h1>План тренировок для {{ player.name }}</h1>
+
+<p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+
+{% if plan %}
+<h2>Рекомендуемые тренировки</h2>
+<div>
+    {% for item in plan %}
+    <div class="recommendation-item">
+        <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
+        <p><em>Качает навыки:</em> 
+        {% for skill in item.skills %}
+            {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
+        {% endfor %}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>Нет подходящих тренировок для балансировки навыков.</p>
+{% endif %}
+
+<p><a href="{{ url_for('player_detail', player_id=player.id) }}" class="btn">Назад к игроку</a></p>
+<p><a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a></p>
+{% endblock %}
