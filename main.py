@@ -9,7 +9,8 @@ def main():
     print("=== Помощник по прокачке игрока ===\n")
 
     # Позиции игрока (хардкод)
-    positions = ["ST", "AMC"]
+    # positions = ["ST", "AMC"]
+    positions = ["DC"]
 
     # Белые навыки для этих позиций
     white_skills = set()
@@ -18,21 +19,21 @@ def main():
 
     # Захардкоженные значения навыков
     player_skills = {
-        "tackling": 35,
-        "marking": 44,
-        "positioning": 215,
-        "heading": 219,
-        "bravery": 32,
-        "passing": 254,
-        "dribbling": 259,
-        "cross": 41,
-        "finishing": 265,
-        "shooting": 271,
-        "physical": 206,
-        "strength": 201,
-        "aggressiveness": 16,
-        "pace": 256,
-        "creativity": 200,
+        "tackling": 271,
+        "marking": 247,
+        "positioning": 240,
+        "heading": 223,
+        "bravery": 253,
+        "passing": 33,
+        "dribbling": 15,
+        "cross": 20,
+        "finishing": 32,
+        "shooting": 24,
+        "physical": 286,
+        "strength": 302,
+        "aggressiveness": 276,
+        "pace": 1,
+        "creativity": 1,
     }
 
     # Заполняем серые навыки минимальным значением 1

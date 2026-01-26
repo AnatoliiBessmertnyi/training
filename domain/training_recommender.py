@@ -1,6 +1,9 @@
 from typing import List, Tuple
-from domain.player import Player
+
 from config.trainings import TRAININGS
+from domain.player import Player
+from domain.training_difficulty import training_difficulty
+
 
 class TrainingRecommender:
     def __init__(self, player: Player, top_n: int = 3):
@@ -21,32 +24,32 @@ class TrainingRecommender:
         white_values = {s: self.player.skills[s] for s in self.player.white_skills}
         max_white = max(white_values.values())
 
-        # Определяем отставание для каждого белого навыка
+        # Отставание каждого белого навыка
         deficit = {s: max_white - val for s, val in white_values.items()}
 
         for tr_id, data in TRAININGS.items():
             training_skills = set(data["skills"])
-            # Белые навыки, которые тренировка качает
+
             white_hit = training_skills & self.player.white_skills
-            # Желательные: топ N слабых
             desired_hit = training_skills & self.target_skills
-            # Серые навыки
             gray_hit = training_skills & self.player.gray_skills
 
-            # Игнорируем тренировки, которые не качают ни один белый навык
             if not white_hit:
                 continue
 
-            # Суммарное отставание, которое тренировка поможет компенсировать
-            gain_score = sum(deficit[s] for s in white_hit)
+            # 🔴 ВАЖНОЕ ИЗМЕНЕНИЕ ЗДЕСЬ
+            gain_score = sum(
+                deficit[s] / training_difficulty(self.player.skills[s])
+                for s in white_hit
+            )
 
             recs.append((
                 tr_id,
                 data["name"],
-                list(desired_hit),  # желательные белые навыки
-                list(training_skills),  # все навыки, которые качает
-                len(gray_hit),  # кол-во серых
-                gain_score      # суммарная польза для белых
+                list(desired_hit),
+                list(training_skills),
+                len(gray_hit),
+                gain_score
             ))
 
         # Сортировка:
