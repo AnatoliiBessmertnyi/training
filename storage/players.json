@@ -1,0 +1,30 @@
+{
+  "players": [
+    {
+      "id": "c5034ead-1c39-4e77-a629-032047160e87",
+      "name": "Geringer",
+      "positions": [
+        "DMC",
+        "MC",
+        "AMC"
+      ],
+      "skills": {
+        "tackling": 86,
+        "marking": 74,
+        "positioning": 77,
+        "heading": 95,
+        "bravery": 90,
+        "passing": 99,
+        "dribbling": 83,
+        "cross": 50,
+        "finishing": 84,
+        "shooting": 96,
+        "physical": 90,
+        "strength": 56,
+        "aggressiveness": 57,
+        "pace": 94,
+        "creativity": 82
+      }
+    }
+  ]
+}
