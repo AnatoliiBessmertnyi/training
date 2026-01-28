@@ -42,7 +42,7 @@ def player_detail(player_id):
         white_skills.update(POSITIONS[pos]["white_skills"])
 
     if request.method == "POST":
-        for skill in white_skills:
+        for skill in SKILLS.keys():  # Update all skills, not just white ones
             val = request.form.get(skill)
             if val:
                 player["skills"][skill] = int(val)

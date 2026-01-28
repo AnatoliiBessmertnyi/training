@@ -3,6 +3,7 @@ from typing import List, Tuple
 from config.trainings import TRAININGS
 from domain.player import Player
 from domain.training_difficulty import training_difficulty
+from domain.training_planner import TrainingPlanner
 
 
 class TrainingRecommender:
@@ -59,3 +60,16 @@ class TrainingRecommender:
 
         # Ограничиваем количество результатов
         return [(tr_id, name, desired, all_skills) for tr_id, name, desired, all_skills, gray, gain in recs[:max_results]]
+
+    def build_balanced_plan(self, total_sessions: int = 10):
+        """
+        Builds a balanced training plan for the player.
+        
+        Args:
+            total_sessions: Number of training sessions to plan
+            
+        Returns:
+            A list of training recommendations
+        """
+        planner = TrainingPlanner(self.player)
+        return planner.plan(max_trainings=total_sessions)
