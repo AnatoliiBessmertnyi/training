@@ -18,9 +18,17 @@
             {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
         {% endfor %}
         </p>
+        <form method="POST" action="{{ url_for('accept_training', player_id=player.id) }}" style="display:inline;">
+            <input type="hidden" name="training_id" value="{{ item.training_id }}">
+            <input type="hidden" name="repeats" value="{{ item.repeats }}">
+            <button type="submit" class="accept-btn">Принять тренировку</button>
+        </form>
     </div>
     {% endfor %}
 </div>
+<form method="POST" action="{{ url_for('accept_all_trainings', player_id=player.id) }}" style="margin-top: 20px;">
+    <button type="submit" class="accept-all-btn">Принять все тренировки</button>
+</form>
 {% else %}
 <p>Нет подходящих тренировок для балансировки навыков.</p>
 {% endif %}

@@ -12,9 +12,11 @@
             Нет указанных навыков
         {% endif %}
         </p>
+        <button type="button" class="accept-btn" onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять тренировку</button>
     </div>
     {% endfor %}
 </div>
+<button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
 {% else %}
 <p>Нет подходящих тренировок для балансировки навыков.</p>
 {% endif %}

@@ -104,6 +104,75 @@ def player_detail(player_id):
     )
 
 
+@app.route("/players/<player_id>/accept_training", methods=["POST"])
+def accept_training(player_id):
+    player_data = repo.get(player_id)
+    
+    training_id = request.form.get("training_id")
+    repeats = int(request.form.get("repeats", 1))
+    
+    # Apply the training to the player using Player's method
+    from config.trainings import TRAININGS
+    if training_id in TRAININGS:
+        training_data = TRAININGS[training_id]
+        
+        # Create Player object to use its methods
+        player_obj = Player(
+            name=player_data["name"],
+            positions=player_data["positions"],
+            skills=player_data["skills"]
+        )
+        
+        # Apply the training multiple times based on repeats
+        for _ in range(repeats):
+            player_obj.apply_training(training_data["skills"], gain=1)
+        
+        # Update player data with modified skills
+        player_data["skills"] = player_obj.skills
+    
+    # Save updated player data
+    repo.update(player_data)
+    
+    # Redirect back to the player detail page
+    return redirect(url_for("player_detail", player_id=player_id))
+
+
+@app.route("/players/<player_id>/accept_all_trainings", methods=["POST"])
+def accept_all_trainings(player_id):
+    player_data = repo.get(player_id)
+    
+    # Rebuild the plan to get all current trainings
+    from domain.training_recommender import TrainingRecommender
+    from domain.player import Player
+    from config.skills import SKILLS
+    
+    skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+    player_obj = Player(
+        name=player_data["name"],
+        positions=player_data["positions"],
+        skills=skills
+    )
+    recommender = TrainingRecommender(player_obj)
+    plan = recommender.build_balanced_plan(total_sessions=10)  # Get current plan
+    
+    # Apply all trainings in the plan using Player's method
+    from config.trainings import TRAININGS
+    for item in plan:
+        training_data = TRAININGS[item.training_id]
+        # Apply the training multiple times based on repeats
+        for _ in range(item.repeats):
+            player_obj.apply_training(training_data["skills"], gain=1)
+    
+    # Update player data with modified skills
+    player_data["skills"] = player_obj.skills
+    
+    # Save updated player data
+    repo.update(player_data)
+    
+    # Redirect back to the player detail page
+    return redirect(url_for("player_detail", player_id=player_id))
+
+
 # 🆕 Новый маршрут для обновления плана и слабых/сильных навыков через JSON
 @app.route("/players/<player_id>/update", methods=["POST"])
 def update_skills_and_get_data(player_id):
