@@ -55,22 +55,24 @@ def player_detail(player_id):
                     player_data["skills"][skill] = int(val)
                 except ValueError:
                     pass  # ignore invalid values
+        
+        # Update training count if provided
+        training_count = request.form.get("training_count", player_data.get("training_count", 10))
+        try:
+            training_count = int(training_count)
+            if training_count < 1:
+                training_count = 1
+            elif training_count > 100:
+                training_count = 100
+        except ValueError:
+            training_count = player_data.get("training_count", 10)
+        
+        player_data["training_count"] = training_count
         repo.update(player_data)
 
         # Determine if we need to rebuild the plan
         action = request.form.get("action", "")
         if action == "update_and_plan":
-            # Get training count from form, default to 10
-            training_count = request.form.get("training_count", 10)
-            try:
-                training_count = int(training_count)
-                if training_count < 1:
-                    training_count = 1
-                elif training_count > 100:
-                    training_count = 100
-            except ValueError:
-                training_count = 10
-            
             # Rebuild plan after update
             skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
             player_obj = Player(
@@ -99,7 +101,7 @@ def player_detail(player_id):
         skills=skills
     )
     recommender = TrainingRecommender(player_obj)
-    plan = recommender.build_balanced_plan(total_sessions=10)
+    plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
 
     return render_template(
         "player_detail.html",
@@ -156,7 +158,7 @@ def accept_all_trainings(player_id):
     if player_data is None:
         return "Player not found", 404
     
-    # Rebuild the plan to get all current trainings
+    # Rebuild the plan to get all current trainings using player's specific training count
     from domain.training_recommender import TrainingRecommender
     from domain.player import Player
     from config.skills import SKILLS
@@ -168,7 +170,8 @@ def accept_all_trainings(player_id):
         skills=skills
     )
     recommender = TrainingRecommender(player_obj)
-    plan = recommender.build_balanced_plan(total_sessions=10)  # Get current plan
+    # Use the player's saved training count instead of hardcoded 10
+    plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
     
     # Apply all trainings in the plan using Player's method
     from config.trainings import TRAININGS
@@ -205,6 +208,19 @@ def update_skills_and_get_data(player_id):
                 player_data["skills"][skill] = int(val)
             except ValueError:
                 pass
+
+    # Update training count if provided
+    training_count = request.form.get("training_count", player_data.get("training_count", 10))
+    try:
+        training_count = int(training_count)
+        if training_count < 1:
+            training_count = 1
+        elif training_count > 100:
+            training_count = 100
+    except ValueError:
+        training_count = player_data.get("training_count", 10)
+    
+    player_data["training_count"] = training_count
     repo.update(player_data)
 
     # Calculate white skills
@@ -220,17 +236,6 @@ def update_skills_and_get_data(player_id):
         positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills
     )
-    
-    # Get training count from form, default to 10
-    training_count = request.form.get("training_count", 10)
-    try:
-        training_count = int(training_count)
-        if training_count < 1:
-            training_count = 1
-        elif training_count > 100:
-            training_count = 100
-    except ValueError:
-        training_count = 10
     
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=training_count)

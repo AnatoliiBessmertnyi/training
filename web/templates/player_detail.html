@@ -305,7 +305,7 @@
 
         <div style="margin-top: 20px;">
             <label for="training_count"><strong>Количество тренировок:</strong></label>
-            <input type="number" id="training_count" name="training_count" value="10" min="1" max="100" style="width: 80px; margin-left: 10px;">
+            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px;">
             <button type="button" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
         </div>
         
