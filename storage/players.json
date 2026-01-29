@@ -9,21 +9,46 @@
         "AMC"
       ],
       "skills": {
-        "tackling": 86,
-        "marking": 74,
-        "positioning": 77,
-        "heading": 95,
-        "bravery": 90,
-        "passing": 99,
-        "dribbling": 83,
+        "tackling": 87,
+        "marking": 88,
+        "positioning": 91,
+        "heading": 97,
+        "bravery": 93,
+        "passing": 101,
+        "dribbling": 85,
         "cross": 50,
-        "finishing": 84,
-        "shooting": 96,
-        "physical": 90,
-        "strength": 56,
-        "aggressiveness": 57,
-        "pace": 94,
-        "creativity": 82
+        "finishing": 98,
+        "shooting": 85,
+        "physical": 92,
+        "strength": 89,
+        "aggressiveness": 90,
+        "pace": 96,
+        "creativity": 94
+      }
+    },
+    {
+      "id": "a4daad44-f18a-4121-bfda-a3ed61af7fab",
+      "name": "Mustafaev",
+      "positions": [
+        "AMC",
+        "ST"
+      ],
+      "skills": {
+        "tackling": 16,
+        "marking": 25,
+        "positioning": 202,
+        "heading": 202,
+        "bravery": 13,
+        "passing": 237,
+        "dribbling": 242,
+        "cross": 22,
+        "shooting": 257,
+        "finishing": 280,
+        "physical": 186,
+        "strength": 183,
+        "aggressiveness": 1,
+        "pace": 240,
+        "creativity": 187
       }
     }
   ]

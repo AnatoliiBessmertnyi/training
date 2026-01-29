@@ -20,8 +20,8 @@ SKILLS: dict[str, str] = {
     "passing": "Передача",
     "dribbling": "Дриблинг",
     "cross": "Навес",
-    "finishing": "Завершение",
     "shooting": "Удары",
+    "finishing": "Завершение",
 
     # Психофизика
     "physical": "Физическая форма",

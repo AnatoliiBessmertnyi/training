@@ -3,32 +3,350 @@
 {% block title %}{{ player.name }} - Детали - Тренеровочный планер{% endblock %}
 
 {% block content %}
-<h1>{{ player.name }}</h1>
+<style>
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f7fa;
+        color: #333;
+        padding: 20px;
+    }
 
-<p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+    .container-flex {
+        display: flex;
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
 
-<h2>Навыки</h2>
-<form method="POST">
-    <!-- Display all skills in the defined order from SKILLS config -->
-    {% for skill_id in skill_names.keys() %}
-        {% if skill_id in white_skills %}
-        <div class="skill-input">
-            <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" 
-                   value="{{ player.skills.get(skill_id, '') }}" min="1" max="1000">
+    .col-skills, .col-plan {
+        padding: 2rem;
+    }
+
+    .col-skills {
+        flex: 1;
+        border-right: 1px solid #eee;
+    }
+
+    .col-plan {
+        flex: 1;
+    }
+
+    h1, h2 {
+        color: #2c3e50;
+        margin-bottom: 1rem;
+    }
+
+    /* Highlight для слабых/перекачанных навыков */
+    .highlights {
+        background: #fef7e0;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid #f59e0b;
+    }
+
+    .highlight-item {
+        margin: 5px 0;
+        font-weight: 500;
+    }
+
+    .highlight-item.weak {
+        color: #dc2626;
+    }
+
+    .highlight-item.over {
+        color: #059669;
+    }
+
+    .skill-input {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+        padding: 10px;
+        background: #f9fafc;
+        border-radius: 6px;
+        transition: background 0.2s ease;
+    }
+
+    .skill-input:hover {
+        background: #edf2f7;
+    }
+
+    .skill-input label {
+        width: 150px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .skill-input input[type="number"] {
+        width: 80px;
+        padding: 6px 8px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        font-size: 1rem;
+        -moz-appearance: textfield;
+    }
+
+    .skill-input input[type="number"]::-webkit-outer-spin-button,
+    .skill-input input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .adjustment-buttons {
+        display: flex;
+        gap: 4px;
+    }
+
+    .adjustment-buttons button {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+        border: 1px solid #ddd;
+        background: #e0e7ff;
+        color: #4f46e5;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        /* Пропустить кнопки при табуляции */
+        outline: none;
+        -moz-outline: none;
+        -webkit-outline: none;
+        tabindex: -1;
+    }
+
+    .adjustment-buttons button:hover {
+        background: #c7d2fe;
+    }
+
+    .gray-skill {
+        opacity: 0.7;
+        background: #f0f0f0 !important;
+        border-left: 3px solid #a0aec0;
+    }
+
+    .mass-adjustment {
+        margin-top: 20px;
+        padding: 15px;
+        background: #f0f4ff;
+        border-radius: 8px;
+    }
+
+    .mass-adjustment button {
+        padding: 8px 16px;
+        margin: 0 5px;
+        border: none;
+        background: #4f46e5;
+        color: white;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        outline: none;
+        -moz-outline: none;
+        -webkit-outline: none;
+        tabindex: -1;
+    }
+
+    .mass-adjustment button:hover {
+        background: #4338ca;
+    }
+
+    .recommendation-item {
+        padding: 12px;
+        margin-bottom: 10px;
+        background: #f0f9ff;
+        border-radius: 6px;
+        border-left: 4px solid #3b82f6;
+    }
+
+    .recommendation-item p {
+        margin: 5px 0;
+    }
+
+    .recommendation-item strong {
+        color: #1e40af;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 10px 20px;
+        background: #3b82f6;
+        color: white;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: 500;
+        margin-top: 15px;
+    }
+
+    .btn:hover {
+        background: #2563eb;
+    }
+</style>
+
+<div class="container-flex">
+    <div class="col-skills">
+        <h1>{{ player.name }}</h1>
+        <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+
+        <!-- Отображение слабых и перекачанных навыков -->
+        <div class="highlights">
+            <div class="highlight-item weak">
+                <strong>Слабые навыки:</strong>
+                {% if player.skills %}
+                  {% set sorted_skills = player.skills.items()|sort(attribute='1') %}
+                  {% set weakest = sorted_skills[:3] %}
+                  {% for skill_id, value in weakest %}
+                    {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                {% endif %}
+            </div>
+            <div class="highlight-item over">
+                <strong>Перекачанные навыки:</strong>
+                {% if player.skills %}
+                  {% set sorted_skills = player.skills.items()|sort(attribute='1', reverse=true) %}
+                  {% set strongest = sorted_skills[:3] %}
+                  {% for skill_id, value in strongest %}
+                    {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
+                  {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+        <h2>Навыки</h2>
+
+        <div id="skills-form">
+            <!-- Display all skills in the defined order from SKILLS config -->
+            {% for skill_id in skill_names.keys() %}
+                {% if skill_id in white_skills %}
+                <div class="skill-input">
+                    <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
+                    <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" 
+                        value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
+                        onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
+                        tabindex="0"> <!-- Явно указываем, что можно фокусироваться -->
+                    <span class="adjustment-buttons">
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
+                    </span>
+                </div>
+                {% else %}
+                <div class="skill-input gray-skill">
+                    <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
+                    <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" 
+                        value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
+                        onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
+                        tabindex="0">
+                    <span class="adjustment-buttons">
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
+                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
+                    </span>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <div class="mass-adjustment">
+                <button type="button" onclick="applyToAll(-1)" tabindex="-1">-1 ко всем</button>
+                <button type="button" onclick="applyToAll(-5)" tabindex="-1">-5 ко всем</button>
+                <button type="button" onclick="applyToAll(-10)" tabindex="-1">-10 ко всем</button>
+                <button type="button" onclick="applyToAll(1)" tabindex="-1">+1 ко всем</button>
+                <button type="button" onclick="applyToAll(5)" tabindex="-1">+5 ко всем</button>
+                <button type="button" onclick="applyToAll(10)" tabindex="-1">+10 ко всем</button>
+            </div>
+        </div>
+
+        <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
+    </div>
+
+    <div class="col-plan" id="plan-container">
+        <h2>План тренировок</h2>
+        {% if plan %}
+        <div>
+            {% for item in plan %}
+            <div class="recommendation-item">
+                <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
+                <p><em>Качает навыки:</em> 
+                {% if item.skills %}
+                    {% for skill in item.skills %}
+                        {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    Нет указанных навыков
+                {% endif %}
+                </p>
+            </div>
+            {% endfor %}
         </div>
         {% else %}
-        <div class="skill-input gray-skill">
-            <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" 
-                   value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000">
-        </div>
+        <p>Нет подходящих тренировок для балансировки навыков.</p>
         {% endif %}
-    {% endfor %}
+    </div>
+</div>
 
-    <button type="submit" class="btn">Сохранить навыки</button>
-</form>
+<script>
+let timeout;
 
-<p><a href="{{ url_for('training_plan', player_id=player.id) }}" class="btn btn-success">Смотреть план тренировок</a></p>
-<p><a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a></p>
+function changeSkillValue(skillId, delta) {
+    const input = document.getElementById(skillId);
+    let value = parseInt(input.value) || 1;
+    value += delta;
+    if (value < 1) value = 1;
+    if (value > 1000) value = 1000;
+    input.value = value;
+    saveSkillAndRefreshPlan(skillId, value);
+}
+
+function saveSkillAndRefreshPlan(skillId, value) {
+    fetch('/players/{{ player.id }}/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=update_and_plan&${encodeURIComponent(skillId)}=${encodeURIComponent(value)}`
+    })
+    .then(response => response.json())  // ← Изменено: теперь JSON
+    .then(data => {
+        // Обновляем план
+        document.querySelector('#plan-container').innerHTML = data.plan_html;
+
+        // Обновляем слабые/сильные навыки
+        const weakestDiv = document.querySelector('.highlight-item.weak');
+        const strongestDiv = document.querySelector('.highlight-item.over');
+
+        if (weakestDiv) {
+            const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+            weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
+        }
+
+        if (strongestDiv) {
+            const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+            strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
+        }
+    })
+    .catch(error => console.error('Ошибка:', error));
+}
+
+function applyToAll(delta) {
+    const inputs = document.querySelectorAll('input[type="number"]');
+    inputs.forEach(input => {
+        let value = parseInt(input.value) || 1;
+        value += delta;
+        if (value < 1) value = 1;
+        if (value > 1000) value = 1000;
+        input.value = value;
+        saveSkillAndRefreshPlan(input.name, value);
+    });
+}
+</script>
 {% endblock %}

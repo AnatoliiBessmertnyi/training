@@ -23,7 +23,6 @@
             <td>{{ player.positions|join(", ") }}</td>
             <td>
                 <a href="{{ url_for('player_detail', player_id=player.id) }}" class="btn">Открыть</a>
-                <a href="{{ url_for('training_plan', player_id=player.id) }}" class="btn btn-success">План</a>
             </td>
         </tr>
         {% endfor %}

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, jsonify
 from storage.player_repository import PlayerRepository
 from domain.player import Player
 from domain.training_recommender import TrainingRecommender
@@ -35,50 +35,105 @@ def new_player():
 
 @app.route("/players/<player_id>", methods=["GET", "POST"])
 def player_detail(player_id):
-    player = repo.get(player_id)
+    player_data = repo.get(player_id)
 
     white_skills = set()
-    for pos in player["positions"]:
+    for pos in player_data["positions"]:
         white_skills.update(POSITIONS[pos]["white_skills"])
 
     if request.method == "POST":
-        for skill in SKILLS.keys():  # Update all skills, not just white ones
-            val = request.form.get(skill)
+        # Handle skill updates
+        for skill in SKILLS.keys():
+            val = request.form.get(f"{skill}")
             if val:
-                player["skills"][skill] = int(val)
-        repo.update(player)
-        return redirect(request.url)
+                try:
+                    player_data["skills"][skill] = int(val)
+                except ValueError:
+                    pass  # ignore invalid values
+        repo.update(player_data)
 
-    return render_template(
-        "player_detail.html",
-        player=player,
-        white_skills=white_skills,
-        skill_names=SKILLS
-    )
+        # Determine if we need to rebuild the plan
+        action = request.form.get("action", "")
+        if action == "update_and_plan":
+            # Rebuild plan after update
+            skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+            player_obj = Player(
+                name=player_data["name"],
+                positions=player_data["positions"],
+                skills=skills
+            )
+            recommender = TrainingRecommender(player_obj)
+            plan = recommender.build_balanced_plan(total_sessions=10)
+        else:
+            plan = []
+        return render_template(
+            "player_detail.html",
+            player=player_data,
+            white_skills=white_skills,
+            skill_names=SKILLS,
+            plan=plan
+        )
 
-
-@app.route("/players/<player_id>/plan")
-def training_plan(player_id):
-    data = repo.get(player_id)
-
-    # серые навыки = 1
-    skills = {k: data["skills"].get(k, 1) for k in SKILLS}
-
-    player = Player(
-        name=data["name"],
-        positions=data["positions"],
+    # On GET, show player and initial plan
+    skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+    player_obj = Player(
+        name=player_data["name"],
+        positions=player_data["positions"],
         skills=skills
     )
-
-    recommender = TrainingRecommender(player)
+    recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=10)
 
     return render_template(
-        "plan.html",
-        player=player,
-        plan=plan,
-        skill_names=SKILLS
+        "player_detail.html",
+        player=player_data,
+        white_skills=white_skills,
+        skill_names=SKILLS,
+        plan=plan
     )
+
+
+# 🆕 Новый маршрут для обновления плана и слабых/сильных навыков через JSON
+@app.route("/players/<player_id>/update", methods=["POST"])
+def update_skills_and_get_data(player_id):
+    player_data = repo.get(player_id)
+
+    # Обновляем навыки
+    for skill in SKILLS.keys():
+        val = request.form.get(f"{skill}")
+        if val:
+            try:
+                player_data["skills"][skill] = int(val)
+            except ValueError:
+                pass
+    repo.update(player_data)
+
+    # Пересчитываем план
+    skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+    player_obj = Player(
+        name=player_data["name"],
+        positions=player_data["positions"],
+        skills=skills
+    )
+    recommender = TrainingRecommender(player_obj)
+    plan = recommender.build_balanced_plan(total_sessions=10)
+
+    # Сортируем навыки
+    sorted_skills = sorted(player_data["skills"].items(), key=lambda x: x[1])
+
+    weakest = sorted_skills[:3]
+    strongest = sorted_skills[-3:]
+
+    # Возвращаем JSON
+    return jsonify({
+        "plan_html": render_template("plan_only.html", plan=plan, skill_names=SKILLS),
+        "weakest_skills": [
+            {"name": SKILLS[k], "value": v} for k, v in weakest
+        ],
+        "strongest_skills": [
+            {"name": SKILLS[k], "value": v} for k, v in strongest
+        ]
+    })
 
 
 if __name__ == "__main__":

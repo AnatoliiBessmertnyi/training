@@ -14,6 +14,7 @@ class TrainingPlanItem:
     training_id: str
     name: str
     repeats: int
+    skills: List[str] = None
 
 
 class TrainingPlanner:
@@ -50,7 +51,8 @@ class TrainingPlanner:
                 plan_items[best_training_id] = TrainingPlanItem(
                     training_id=best_training_id,
                     name=training_data["name"],
-                    repeats=1
+                    repeats=1,
+                    skills=training_data["skills"]
                 )
 
         return list(plan_items.values())

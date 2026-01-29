@@ -1,0 +1,20 @@
+{% if plan %}
+<div>
+    {% for item in plan %}
+    <div class="recommendation-item">
+        <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
+        <p><em>Качает навыки:</em> 
+        {% if item.skills %}
+            {% for skill in item.skills %}
+                {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        {% else %}
+            Нет указанных навыков
+        {% endif %}
+        </p>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>Нет подходящих тренировок для балансировки навыков.</p>
+{% endif %}
