@@ -220,20 +220,32 @@
         <!-- Отображение слабых и перекачанных навыков -->
         <div class="highlights">
             <div class="highlight-item weak">
-                <strong>Слабые навыки:</strong>
+                <strong>Слабые белые навыки:</strong>
                 {% if player.skills %}
-                  {% set sorted_skills = player.skills.items()|sort(attribute='1') %}
-                  {% set weakest = sorted_skills[:3] %}
+                  {% set white_skill_items = [] %}
+                  {% for skill_id in white_skills %}
+                    {% if skill_id in player.skills %}
+                      {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
+                    {% endif %}
+                  {% endfor %}
+                  {% set sorted_white_skills = white_skill_items|sort(attribute='1') %}
+                  {% set weakest = sorted_white_skills[:3] %}
                   {% for skill_id, value in weakest %}
                     {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
                   {% endfor %}
                 {% endif %}
             </div>
             <div class="highlight-item over">
-                <strong>Перекачанные навыки:</strong>
+                <strong>Перекачанные белые навыки:</strong>
                 {% if player.skills %}
-                  {% set sorted_skills = player.skills.items()|sort(attribute='1', reverse=true) %}
-                  {% set strongest = sorted_skills[:3] %}
+                  {% set white_skill_items = [] %}
+                  {% for skill_id in white_skills %}
+                    {% if skill_id in player.skills %}
+                      {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
+                    {% endif %}
+                  {% endfor %}
+                  {% set sorted_white_skills = white_skill_items|sort(attribute='1', reverse=true) %}
+                  {% set strongest = sorted_white_skills[:3] %}
                   {% for skill_id, value in strongest %}
                     {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
                   {% endfor %}
@@ -435,8 +447,67 @@ function acceptTraining(trainingId, repeats) {
     })
     .then(response => {
         if (response.ok) {
-            // Refresh the page to show updated skills and plan
-            window.location.reload();
+            // Find the training item to get affected skills
+            const trainingElement = Array.from(document.querySelectorAll('.recommendation-item'))
+                .find(item => item.innerHTML.includes(trainingId));
+                
+            if (trainingElement) {
+                // Extract skill names from the training description
+                const skillsText = trainingElement.querySelector('em')?.nextSibling?.textContent || '';
+                // Parse the skills list - looking for patterns like "skill1, skill2, skill3"
+                const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
+                let match;
+                const affectedSkillNames = [];
+                
+                while ((match = skillPattern.exec(skillsText)) !== null) {
+                    let skillName = match[1].trim();
+                    if (skillName) {
+                        affectedSkillNames.push(skillName);
+                    }
+                }
+                
+                // Add highlight animation to the affected skill inputs
+                affectedSkillNames.forEach(skillName => {
+                    // Find the skill input by matching the label text (skill name)
+                    const allLabels = document.querySelectorAll('label');
+                    allLabels.forEach(label => {
+                        if (label.textContent.trim().includes(skillName)) {
+                            // Find the corresponding input
+                            const inputId = label.getAttribute('for');
+                            const inputElement = document.getElementById(inputId);
+                            if (inputElement) {
+                                const container = inputElement.closest('.skill-input');
+                                if (container) {
+                                    // Add highlight effect
+                                    container.style.backgroundColor = '#FEF3C7'; // yellow highlight
+                                    setTimeout(() => {
+                                        // Smooth transition back to original color
+                                        container.style.transition = 'background-color 1s ease';
+                                        container.style.backgroundColor = '#f9fafc';
+                                        
+                                        // Also handle gray-skill styling if needed
+                                        if (container.classList.contains('gray-skill')) {
+                                            container.style.backgroundColor = '#f0f0f0';
+                                        }
+                                        
+                                        // Remove transition property after animation completes
+                                        setTimeout(() => {
+                                            if (container) {
+                                                container.style.transition = '';
+                                            }
+                                        }, 1000);
+                                    }, 100); // Small delay to ensure highlight is visible
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+            
+            // Refresh the page to show updated skills and plan after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1200); // Wait for the highlight animation before reload
         } else {
             console.error('Error accepting training');
         }
@@ -446,6 +517,24 @@ function acceptTraining(trainingId, repeats) {
 
 // Function to accept all trainings
 function acceptAllTrainings() {
+    // Get all training elements to find affected skills
+    const allTrainingElements = document.querySelectorAll('.recommendation-item');
+    const allAffectedSkillNames = [];
+    
+    allTrainingElements.forEach(element => {
+        const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
+        // Parse the skills list - looking for patterns like "skill1, skill2, skill3"
+        const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
+        let match;
+        
+        while ((match = skillPattern.exec(skillsText)) !== null) {
+            let skillName = match[1].trim();
+            if (skillName) {
+                allAffectedSkillNames.push(skillName);
+            }
+        }
+    });
+    
     fetch('/players/{{ player_id }}/accept_all_trainings', {
         method: 'POST',
         headers: {
@@ -455,8 +544,47 @@ function acceptAllTrainings() {
     })
     .then(response => {
         if (response.ok) {
-            // Refresh the page to show updated skills and plan
-            window.location.reload();
+            // Add highlight animation to all affected skill inputs
+            allAffectedSkillNames.forEach(skillName => {
+                // Find the skill input by matching the label text (skill name)
+                const allLabels = document.querySelectorAll('label');
+                allLabels.forEach(label => {
+                    if (label.textContent.trim().includes(skillName)) {
+                        // Find the corresponding input
+                        const inputId = label.getAttribute('for');
+                        const inputElement = document.getElementById(inputId);
+                        if (inputElement) {
+                            const container = inputElement.closest('.skill-input');
+                            if (container) {
+                                // Add highlight effect
+                                container.style.backgroundColor = '#FEF3C7'; // yellow highlight
+                                setTimeout(() => {
+                                    // Smooth transition back to original color
+                                    container.style.transition = 'background-color 1s ease';
+                                    container.style.backgroundColor = '#f9fafc';
+                                    
+                                    // Also handle gray-skill styling if needed
+                                    if (container.classList.contains('gray-skill')) {
+                                        container.style.backgroundColor = '#f0f0f0';
+                                    }
+                                    
+                                    // Remove transition property after animation completes
+                                    setTimeout(() => {
+                                        if (container) {
+                                            container.style.transition = '';
+                                        }
+                                    }, 1000);
+                                }, 100); // Small delay to ensure highlight is visible
+                            }
+                        }
+                    }
+                });
+            });
+            
+            // Refresh the page to show updated skills and plan after a short delay
+            setTimeout(() => {
+                window.location.reload();
+            }, 1200); // Wait for the highlight animation before reload
         } else {
             console.error('Error accepting all trainings');
         }
