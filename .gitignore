@@ -1,61 +1,44 @@
-```gitignore
-# Python
-__pycache__/
+# Compiled and build artifacts
 *.pyc
-*.pyo
-*.pyd
-.Python
-env/
-venv/
-.venv/
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Build and distribution artifacts
-build/
-dist/
-*.egg
-*.egg-info/
+__pycache__/
+*.o
+*.obj
+*.out
+*.class
+*.dll
 *.so
-*.whl
+*.a
 
-# Web specific
-*.css.map
-*.js.map
-node_modules/
-
-# Logs
-*.log
-
-# IDE and editor files
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-
-# Environment variables
+# Dependencies
+.venv/
+venv/
 .env
 .env.local
-*.env.*
+.env.*
 
-# Coverage reports
+# Logs and temp files
+*.log
+*.tmp
+*.swp
+*.swo
+
+# Editors
+.vscode/
+.idea/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Coverage
 .coverage
+coverage/
 htmlcov/
-.coverage.*
-coverage.xml
 
-# Testing
-.pytest_cache/
+# Build directories
+dist/
+build/
+target/
 .mypy_cache/
-.hypothesis/
-```
+.pytest_cache/
+.gradle/

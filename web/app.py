@@ -36,6 +36,10 @@ def new_player():
 @app.route("/players/<player_id>", methods=["GET", "POST"])
 def player_detail(player_id):
     player_data = repo.get(player_id)
+    
+    # Check if player exists
+    if player_data is None:
+        return "Player not found", 404
 
     white_skills = set()
     if player_data["positions"]:  # Check if positions is not None
@@ -109,6 +113,10 @@ def player_detail(player_id):
 def accept_training(player_id):
     player_data = repo.get(player_id)
     
+    # Check if player exists
+    if player_data is None:
+        return "Player not found", 404
+    
     training_id = request.form.get("training_id")
     repeats = int(request.form.get("repeats", 1))
     
@@ -141,6 +149,10 @@ def accept_training(player_id):
 @app.route("/players/<player_id>/accept_all_trainings", methods=["POST"])
 def accept_all_trainings(player_id):
     player_data = repo.get(player_id)
+    
+    # Check if player exists
+    if player_data is None:
+        return "Player not found", 404
     
     # Rebuild the plan to get all current trainings
     from domain.training_recommender import TrainingRecommender
@@ -178,6 +190,10 @@ def accept_all_trainings(player_id):
 @app.route("/players/<player_id>/update", methods=["POST"])
 def update_skills_and_get_data(player_id):
     player_data = repo.get(player_id)
+    
+    # Check if player exists
+    if player_data is None:
+        return "Player not found", 404
 
     # Обновляем навыки
     for skill in SKILLS.keys():
