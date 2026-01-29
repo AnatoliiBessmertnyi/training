@@ -85,6 +85,7 @@ def player_detail(player_id):
         return render_template(
             "player_detail.html",
             player=player_data,
+            player_id=player_id,
             white_skills=white_skills,
             skill_names=SKILLS,
             plan=plan
@@ -103,6 +104,7 @@ def player_detail(player_id):
     return render_template(
         "player_detail.html",
         player=player_data,
+        player_id=player_id,
         white_skills=white_skills,
         skill_names=SKILLS,
         plan=plan
