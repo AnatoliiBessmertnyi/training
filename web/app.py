@@ -55,6 +55,17 @@ def player_detail(player_id):
         # Determine if we need to rebuild the plan
         action = request.form.get("action", "")
         if action == "update_and_plan":
+            # Get training count from form, default to 10
+            training_count = request.form.get("training_count", 10)
+            try:
+                training_count = int(training_count)
+                if training_count < 1:
+                    training_count = 1
+                elif training_count > 100:
+                    training_count = 100
+            except ValueError:
+                training_count = 10
+            
             # Rebuild plan after update
             skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
             player_obj = Player(
@@ -63,7 +74,7 @@ def player_detail(player_id):
                 skills=skills
             )
             recommender = TrainingRecommender(player_obj)
-            plan = recommender.build_balanced_plan(total_sessions=10)
+            plan = recommender.build_balanced_plan(total_sessions=training_count)
         else:
             plan = []
         return render_template(
@@ -115,8 +126,20 @@ def update_skills_and_get_data(player_id):
         positions=player_data["positions"],
         skills=skills
     )
+    
+    # Get training count from form, default to 10
+    training_count = request.form.get("training_count", 10)
+    try:
+        training_count = int(training_count)
+        if training_count < 1:
+            training_count = 1
+        elif training_count > 100:
+            training_count = 100
+    except ValueError:
+        training_count = 10
+    
     recommender = TrainingRecommender(player_obj)
-    plan = recommender.build_balanced_plan(total_sessions=10)
+    plan = recommender.build_balanced_plan(total_sessions=training_count)
 
     # Сортируем навыки
     sorted_skills = sorted(player_data["skills"].items(), key=lambda x: x[1])
