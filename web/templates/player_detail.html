@@ -266,6 +266,12 @@
             </div>
         </div>
 
+        <div style="margin-top: 20px;">
+            <label for="training_count"><strong>Количество тренировок:</strong></label>
+            <input type="number" id="training_count" name="training_count" value="10" min="1" max="100" style="width: 80px; margin-left: 10px;">
+            <button type="button" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
+        </div>
+        
         <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
     </div>
 
@@ -308,14 +314,56 @@ function changeSkillValue(skillId, delta) {
 }
 
 function saveSkillAndRefreshPlan(skillId, value) {
+    const trainingCount = document.getElementById('training_count').value;
     fetch('/players/{{ player.id }}/update', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: `action=update_and_plan&${encodeURIComponent(skillId)}=${encodeURIComponent(value)}`
+        body: `action=update_and_plan&${encodeURIComponent(skillId)}=${encodeURIComponent(value)}&training_count=${encodeURIComponent(trainingCount)}`
     })
-    .then(response => response.json())  // ← Изменено: теперь JSON
+    .then(response => response.json())
+    .then(data => {
+        // Обновляем план
+        document.querySelector('#plan-container').innerHTML = data.plan_html;
+
+        // Обновляем слабые/сильные навыки
+        const weakestDiv = document.querySelector('.highlight-item.weak');
+        const strongestDiv = document.querySelector('.highlight-item.over');
+
+        if (weakestDiv) {
+            const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+            weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
+        }
+
+        if (strongestDiv) {
+            const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+            strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
+        }
+    })
+    .catch(error => console.error('Ошибка:', error));
+}
+
+function refreshPlan() {
+    const trainingCount = document.getElementById('training_count').value;
+    
+    // Collect all current skill values
+    const formData = new FormData();
+    formData.append('action', 'update_and_plan');
+    formData.append('training_count', trainingCount);
+    
+    const inputs = document.querySelectorAll('input[type="number"]');
+    inputs.forEach(input => {
+        if (input.name && input.name !== 'training_count') {
+            formData.append(input.name, input.value);
+        }
+    });
+    
+    fetch('/players/{{ player.id }}/update', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
     .then(data => {
         // Обновляем план
         document.querySelector('#plan-container').innerHTML = data.plan_html;

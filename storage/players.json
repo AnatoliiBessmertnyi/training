@@ -50,6 +50,32 @@
         "pace": 240,
         "creativity": 187
       }
+    },
+    {
+      "id": "5b364ad6-cbcf-412f-ac36-ab89bb44f186",
+      "name": "Test Player",
+      "positions": [
+        "DMC",
+        "MC",
+        "AMC"
+      ],
+      "skills": {
+        "tackling": 87,
+        "marking": 88,
+        "positioning": 91,
+        "heading": 97,
+        "bravery": 93,
+        "passing": 101,
+        "dribbling": 85,
+        "cross": 50,
+        "finishing": 98,
+        "shooting": 85,
+        "physical": 92,
+        "strength": 89,
+        "aggressiveness": 90,
+        "pace": 96,
+        "creativity": 94
+      }
     }
   ]
 }
