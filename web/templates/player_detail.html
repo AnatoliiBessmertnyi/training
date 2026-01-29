@@ -170,6 +170,31 @@
     .recommendation-item strong {
         color: #1e40af;
     }
+    
+    .accept-btn, .accept-all-btn {
+        padding: 6px 12px;
+        background: #10b981;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+    
+    .accept-btn:hover, .accept-all-btn:hover {
+        background: #059669;
+    }
+    
+    .accept-all-btn {
+        background: #3b82f6;
+        padding: 10px 20px;
+        font-size: 1rem;
+    }
+    
+    .accept-all-btn:hover {
+        background: #2563eb;
+    }
 
     .btn {
         display: inline-block;
@@ -291,9 +316,11 @@
                     Нет указанных навыков
                 {% endif %}
                 </p>
+                <button type="button" class="accept-btn" onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять тренировку</button>
             </div>
             {% endfor %}
         </div>
+        <button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
         {% else %}
         <p>Нет подходящих тренировок для балансировки навыков.</p>
         {% endif %}
@@ -315,7 +342,7 @@ function changeSkillValue(skillId, delta) {
 
 function saveSkillAndRefreshPlan(skillId, value) {
     const trainingCount = document.getElementById('training_count').value;
-    fetch('/players/{{ player.id }}/update', {
+    fetch('/players/{{ player_id }}/update', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -359,7 +386,7 @@ function refreshPlan() {
         }
     });
     
-    fetch('/players/{{ player.id }}/update', {
+    fetch('/players/{{ player_id }}/update', {
         method: 'POST',
         body: formData
     })
@@ -395,6 +422,46 @@ function applyToAll(delta) {
         input.value = value;
         saveSkillAndRefreshPlan(input.name, value);
     });
+}
+
+// Function to accept a specific training
+function acceptTraining(trainingId, repeats) {
+    fetch('/players/{{ player_id }}/accept_training', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `training_id=${encodeURIComponent(trainingId)}&repeats=${encodeURIComponent(repeats)}`
+    })
+    .then(response => {
+        if (response.ok) {
+            // Refresh the page to show updated skills and plan
+            window.location.reload();
+        } else {
+            console.error('Error accepting training');
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+// Function to accept all trainings
+function acceptAllTrainings() {
+    fetch('/players/{{ player_id }}/accept_all_trainings', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: ''
+    })
+    .then(response => {
+        if (response.ok) {
+            // Refresh the page to show updated skills and plan
+            window.location.reload();
+        } else {
+            console.error('Error accepting all trainings');
+        }
+    })
+    .catch(error => console.error('Error:', error));
 }
 </script>
 {% endblock %}
