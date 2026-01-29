@@ -56,9 +56,10 @@ class Player:
         for skill in training_skills:
             if skill in self.skills:
                 self.skills[skill] += gain
-                # Можно добавить максимум (например 100)
-                if self.skills[skill] > 100:
-                    self.skills[skill] = 100
+                # Максимальное значение навыка теперь 400, как в тренировочном симуляторе
+                from domain.training_simulator import MAX_SKILL_VALUE
+                if self.skills[skill] > MAX_SKILL_VALUE:
+                    self.skills[skill] = MAX_SKILL_VALUE
 
     def apply_monthly_decay(self, decay: int = 20):
         """Деградация всех навыков раз в месяц"""
