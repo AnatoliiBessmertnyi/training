@@ -25,7 +25,8 @@ class PlayerRepository:
             "id": str(uuid.uuid4()),
             "name": name,
             "positions": positions,
-            "skills": {}
+            "skills": {},
+            "training_count": 10  # Default training count
         }
         players.append(player)
         self.save_all(players)
