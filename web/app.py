@@ -38,8 +38,9 @@ def player_detail(player_id):
     player_data = repo.get(player_id)
 
     white_skills = set()
-    for pos in player_data["positions"]:
-        white_skills.update(POSITIONS[pos]["white_skills"])
+    if player_data["positions"]:  # Check if positions is not None
+        for pos in player_data["positions"]:
+            white_skills.update(POSITIONS[pos]["white_skills"])
 
     if request.method == "POST":
         # Handle skill updates
@@ -70,7 +71,7 @@ def player_detail(player_id):
             skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
             player_obj = Player(
                 name=player_data["name"],
-                positions=player_data["positions"],
+                positions=player_data["positions"] if player_data["positions"] else [],
                 skills=skills
             )
             recommender = TrainingRecommender(player_obj)
@@ -89,7 +90,7 @@ def player_detail(player_id):
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
         name=player_data["name"],
-        positions=player_data["positions"],
+        positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills
     )
     recommender = TrainingRecommender(player_obj)
@@ -119,7 +120,7 @@ def accept_training(player_id):
         # Create Player object to use its methods
         player_obj = Player(
             name=player_data["name"],
-            positions=player_data["positions"],
+            positions=player_data["positions"] if player_data["positions"] else [],
             skills=player_data["skills"]
         )
         
@@ -149,7 +150,7 @@ def accept_all_trainings(player_id):
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
         name=player_data["name"],
-        positions=player_data["positions"],
+        positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills
     )
     recommender = TrainingRecommender(player_obj)
@@ -188,11 +189,17 @@ def update_skills_and_get_data(player_id):
                 pass
     repo.update(player_data)
 
+    # Calculate white skills
+    white_skills = set()
+    if player_data["positions"]:  # Check if positions is not None
+        for pos in player_data["positions"]:
+            white_skills.update(POSITIONS[pos]["white_skills"])
+
     # Пересчитываем план
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
         name=player_data["name"],
-        positions=player_data["positions"],
+        positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills
     )
     
@@ -211,10 +218,13 @@ def update_skills_and_get_data(player_id):
     plan = recommender.build_balanced_plan(total_sessions=training_count)
 
     # Сортируем навыки
-    sorted_skills = sorted(player_data["skills"].items(), key=lambda x: x[1])
+    # Only consider white skills for weak/strong skills display
+    white_skill_items = [(skill_id, player_data["skills"][skill_id]) for skill_id in white_skills 
+                         if skill_id in player_data["skills"]]
+    sorted_white_skills = sorted(white_skill_items, key=lambda x: x[1])
 
-    weakest = sorted_skills[:3]
-    strongest = sorted_skills[-3:]
+    weakest = sorted_white_skills[:3]
+    strongest = sorted_white_skills[-3:]
 
     # Возвращаем JSON
     return jsonify({
