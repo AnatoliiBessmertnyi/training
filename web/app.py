@@ -303,6 +303,10 @@ def update_skills_and_get_data(player_id):
     gray_skills_values = [player_data["skills"][skill_id] for skill_id in gray_skills 
                          if skill_id in player_data["skills"]]
     gray_skills_avg = sum(gray_skills_values) / len(gray_skills_values) if gray_skills_values else 0
+    
+    # Calculate the difference between strongest and weakest white skills
+    white_skills_values = [v for _, v in sorted_white_skills]
+    white_skill_difference = max(white_skills_values) - min(white_skills_values) if white_skills_values else 0
 
     # Возвращаем JSON
     return jsonify({
@@ -315,7 +319,8 @@ def update_skills_and_get_data(player_id):
         ],
         "all_skills_avg": round(all_skills_avg, 2),
         "white_skills_avg": round(white_skills_avg, 2),
-        "gray_skills_avg": round(gray_skills_avg, 2)
+        "gray_skills_avg": round(gray_skills_avg, 2),
+        "white_skill_difference": white_skill_difference
     })
 
 
