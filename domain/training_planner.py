@@ -9,6 +9,39 @@ MAX_SKILL_LEVEL = 400
 BASE_TRAINING_GAIN = 10
 
 
+def training_difficulty(skill_level: int, is_gray_skill: bool = False) -> float:
+    """
+    Calculate the difficulty factor for a skill based on its level.
+    Higher skill levels have higher difficulty factors.
+    """
+    if is_gray_skill:
+        # For gray skills, we might want a different calculation
+        # As the gray skill level increases, it becomes harder to train through
+        # so we return a factor that increases with the skill level
+        if skill_level <= 20:
+            return 1.0
+        elif skill_level <= 50:
+            return 1.2
+        elif skill_level <= 100:
+            return 1.5
+        elif skill_level <= 200:
+            return 2.0
+        else:
+            return 2.5
+    else:
+        # For white skills
+        if skill_level <= 50:
+            return 1.0
+        elif skill_level <= 100:
+            return 1.1
+        elif skill_level <= 200:
+            return 1.2
+        elif skill_level <= 300:
+            return 1.3
+        else:
+            return 1.5
+
+
 @dataclass
 class TrainingPlanItem:
     training_id: str

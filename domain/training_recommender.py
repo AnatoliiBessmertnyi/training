@@ -2,8 +2,7 @@ from typing import List, Tuple
 
 from config.trainings import TRAININGS
 from domain.player import Player
-from domain.training_difficulty import training_difficulty
-from domain.training_planner import TrainingPlanner
+from domain.training_planner import TrainingPlanner, training_difficulty
 
 
 class TrainingRecommender:
