@@ -14,7 +14,7 @@
     .container-flex {
         display: flex;
         gap: 1.5rem;
-        max-width: 1400px;
+        max-width: 1800px;
         margin: 0 auto;
         background: var(--bg-secondary);
         border-radius: 10px;
@@ -28,7 +28,7 @@
     }
 
     .col-stats {
-        flex: 0 0 280px;
+        flex: 0 0 320px;
         border-right: 1px solid var(--border-color);
         display: flex;
         flex-direction: column;
@@ -36,14 +36,14 @@
     }
 
     .col-skills {
-        flex: 1;
+        flex: 2;
         border-right: 1px solid var(--border-color);
-        min-width: 400px;
+        min-width: 500px;
     }
 
     .col-plan {
-        flex: 1;
-        min-width: 400px;
+        flex: 1.5;
+        min-width: 450px;
     }
 
     /* Statistics card */
@@ -70,6 +70,13 @@
     .stat-value {
         font-weight: 600;
         color: var(--accent-green);
+    }
+    
+    .player-info {
+        background: var(--bg-tertiary);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-blue);
     }
 
     h1, h2 {
@@ -274,7 +281,12 @@
 
 <div class="container-flex">
     <div class="col-stats">
-        <h2>Статистика</h2>
+        <h2>Общее</h2>
+        <div class="player-info">
+            <h1>{{ player.name }}</h1>
+            <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+        </div>
+        
         <div class="stats-card">
             <h3>Средние значения навыков</h3>
             <div class="stat-item">
@@ -361,9 +373,6 @@
     </div>
     
     <div class="col-skills">
-        <h1>{{ player.name }}</h1>
-        <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
-
         <h2>Навыки</h2>
 
         <div id="skills-form">
