@@ -4,6 +4,7 @@ from domain.player import Player
 from domain.training_recommender import TrainingRecommender
 from config.positions import POSITIONS
 from config.skills import SKILLS
+from config.trainings import TRAININGS
 
 app = Flask(__name__)
 repo = PlayerRepository()
@@ -84,13 +85,30 @@ def player_detail(player_id):
             plan = recommender.build_balanced_plan(total_sessions=training_count)
         else:
             plan = []
+            
+        # Prepare plan data with training types (only if there's a plan)
+        if plan:
+            plan_with_types = []
+            for item in plan:
+                training_type = TRAININGS.get(item.training_id, {}).get("type", "unknown")
+                plan_with_types.append({
+                    'training_id': item.training_id,
+                    'name': item.name,
+                    'repeats': item.repeats,
+                    'skills': item.skills,
+                    'type': training_type
+                })
+            plan_to_render = plan_with_types
+        else:
+            plan_to_render = plan
+
         return render_template(
             "player_detail.html",
             player=player_data,
             player_id=player_id,
             white_skills=white_skills,
             skill_names=SKILLS,
-            plan=plan
+            plan=plan_to_render
         )
 
     # On GET, show player and initial plan
@@ -102,6 +120,18 @@ def player_detail(player_id):
     )
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
+    
+    # Prepare plan data with training types
+    plan_with_types = []
+    for item in plan:
+        training_type = TRAININGS.get(item.training_id, {}).get("type", "unknown")
+        plan_with_types.append({
+            'training_id': item.training_id,
+            'name': item.name,
+            'repeats': item.repeats,
+            'skills': item.skills,
+            'type': training_type
+        })
 
     return render_template(
         "player_detail.html",
@@ -109,7 +139,7 @@ def player_detail(player_id):
         player_id=player_id,
         white_skills=white_skills,
         skill_names=SKILLS,
-        plan=plan
+        plan=plan_with_types
     )
 
 
