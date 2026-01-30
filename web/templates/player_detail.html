@@ -283,11 +283,43 @@
             </div>
             <div class="stat-item">
                 <span class="stat-label">Белые навыки:</span>
-                <span class="stat-value" id="white-skills-avg">{{ "%.2f"|format(([player.skills[skill_id] for skill_id in white_skills if skill_id in player.skills]|sum / ([skill_id for skill_id in white_skills if skill_id in player.skills]|length or 1)) if player.skills else 0) }}</span>
+                <span class="stat-value" id="white-skills-avg">
+                    {% if player.skills %}
+                        {% set white_skill_values = [] %}
+                        {% for skill_id in white_skills %}
+                            {% if skill_id in player.skills %}
+                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if white_skill_values %}
+                            {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
+                        {% else %}
+                            0.00
+                        {% endif %}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Серые навыки:</span>
-                <span class="stat-value" id="gray-skills-avg">{{ "%.2f"|format(([player.skills[skill_id] for skill_id in (skill_names.keys()|list if skill_names else []) if skill_id not in white_skills and skill_id in player.skills]|sum / ([skill_id for skill_id in (skill_names.keys()|list if skill_names else []) if skill_id not in white_skills and skill_id in player.skills]|length or 1)) if player.skills else 0) }}</span>
+                <span class="stat-value" id="gray-skills-avg">
+                    {% if player.skills %}
+                        {% set gray_skill_values = [] %}
+                        {% for skill_id in skill_names.keys() %}
+                            {% if skill_id not in white_skills and skill_id in player.skills %}
+                                {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if gray_skill_values %}
+                            {{ "%.2f"|format(gray_skill_values|sum / gray_skill_values|length) }}
+                        {% else %}
+                            0.00
+                        {% endif %}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span>
             </div>
         </div>
         
