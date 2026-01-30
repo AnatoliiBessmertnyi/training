@@ -9,28 +9,48 @@ MAX_SKILL_LEVEL = 400
 BASE_TRAINING_GAIN = 10
 
 
-def training_difficulty(skill_level: int, is_gray_skill: bool = False) -> float:
+def get_position_penalty_multiplier(positions: list[str]) -> float:
+    """
+    Returns a penalty multiplier based on player positions.
+    More complex positions (like DMC, MC) might need different gray skill penalties.
+    """
+    # Count important central positions that typically have many gray skills affected
+    central_positions = {"DMC", "MC", "AMC"}  # Central positions often have many gray skills
+    mixed_positions_count = len(set(positions) & central_positions)
+    
+    # More positions = more gray skills potentially affected, so adjust penalty accordingly
+    if mixed_positions_count >= 2:
+        return 1.2  # Slightly higher penalty for multi-position players with central roles
+    elif "DMC" in positions or "MC" in positions:
+        return 1.1  # Slightly higher penalty for central midfielders
+    else:
+        return 1.0  # Normal penalty
+
+
+def training_difficulty(skill_level: int, is_gray_skill: bool = False, position_penalty_multiplier: float = 1.0) -> float:
     """
     Calculate the difficulty factor for a skill based on its level.
     Higher skill levels have higher difficulty factors.
+    For gray skills: up to 20 it's still manageable, but after 20 very high penalty
     """
     if is_gray_skill:
-        # For gray skills, we want much higher penalty especially for lower levels
-        # to significantly slow down gray skill development
+        # For gray skills, up to 20 it's still manageable, after 20 increasingly high penalty
         if skill_level <= 5:
-            return 5.0  # Very high penalty for very low gray skills
+            base_penalty = 1.0  # Low penalty for very low gray skills
         elif skill_level <= 10:
-            return 4.0  # High penalty
+            base_penalty = 1.2  # Low penalty
         elif skill_level <= 20:
-            return 3.0  # High penalty for low gray skills
+            base_penalty = 1.5  # Moderate penalty for gray skills up to 20
         elif skill_level <= 50:
-            return 2.5
+            base_penalty = 3.0  # High penalty after 20
         elif skill_level <= 100:
-            return 2.0
+            base_penalty = 4.0  # Very high penalty
         elif skill_level <= 200:
-            return 1.5
+            base_penalty = 4.5  # Extremely high penalty
         else:
-            return 1.2  # Lower penalty for high gray skills since they're harder to improve anyway
+            base_penalty = 5.0  # Maximum penalty for high gray skills
+        
+        return base_penalty * position_penalty_multiplier
     else:
         # For white skills
         if skill_level <= 50:
@@ -58,6 +78,7 @@ class TrainingPlanner:
         self.player = player
         self.white_skills = set(player.white_skills)
         self.gray_skills = set(player.gray_skills)
+        self.position_penalty_multiplier = get_position_penalty_multiplier(player.positions)
 
     def plan(self, max_trainings: int = 50) -> List[TrainingPlanItem]:
         """
@@ -159,8 +180,8 @@ class TrainingPlanner:
             for skill in training_gray_skills:
                 # Чем выше значение серого навыка, тем больше штраф
                 skill_level = skills[skill]
-                # Используем функцию сложности для серых навыков
-                difficulty_factor = training_difficulty(skill_level, is_gray_skill=True)
+                # Используем функцию сложности для серых навыков с учетом позиционного множителя
+                difficulty_factor = training_difficulty(skill_level, is_gray_skill=True, position_penalty_multiplier=self.position_penalty_multiplier)
                 # Увеличиваем штраф, особенно для низких серых навыков
                 gray_penalty += difficulty_factor * 10  # увеличенный штраф
             
