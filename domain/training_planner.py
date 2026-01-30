@@ -12,17 +12,17 @@ BASE_TRAINING_GAIN = 10
 def get_position_penalty_multiplier(positions: list[str]) -> float:
     """
     Returns a penalty multiplier based on player positions.
-    More complex positions (like DMC, MC) might need different gray skill penalties.
+    More complex positions (like DMC, MC, DC) might need different gray skill penalties.
     """
     # Count important central positions that typically have many gray skills affected
-    central_positions = {"DMC", "MC", "AMC"}  # Central positions often have many gray skills
+    central_positions = {"DMC", "MC", "AMC", "DC"}  # Central positions often have many gray skills
     mixed_positions_count = len(set(positions) & central_positions)
     
     # More positions = more gray skills potentially affected, so adjust penalty accordingly
     if mixed_positions_count >= 2:
         return 1.2  # Slightly higher penalty for multi-position players with central roles
-    elif "DMC" in positions or "MC" in positions:
-        return 1.1  # Slightly higher penalty for central midfielders
+    elif "DMC" in positions or "MC" in positions or "DC" in positions:
+        return 1.1  # Slightly higher penalty for central midfielders and defenders
     else:
         return 1.0  # Normal penalty
 
@@ -168,8 +168,8 @@ class TrainingPlanner:
             training_white_skills = set(tr_data["skills"]) & self.white_skills
             if not training_white_skills:
                 continue
-                
-            # Проверяем, есть ли серые навыки (чем их больше, тем хуже)
+            
+            # Проверяем, есть ли серые навыки (для DC особенно важно избегать тренировок с серыми навыками)
             training_gray_skills = set(tr_data["skills"]) & self.gray_skills
             
             # Основная логика: штрафуем за серые навыки, премируем за покрытие отстающих навыков
@@ -183,7 +183,11 @@ class TrainingPlanner:
                 # Используем функцию сложности для серых навыков с учетом позиционного множителя
                 difficulty_factor = training_difficulty(skill_level, is_gray_skill=True, position_penalty_multiplier=self.position_penalty_multiplier)
                 # Увеличиваем штраф, особенно для низких серых навыков
-                gray_penalty += difficulty_factor * 10  # увеличенный штраф
+                base_penalty = difficulty_factor * 10  # базовый штраф
+                # Для DC (и других центральных позиций) увеличиваем штраф за серые навыки
+                if "DC" in self.player.positions:
+                    base_penalty *= 1.5  # дополнительный штраф для DC
+                gray_penalty += base_penalty
             
             # Премия за покрытие отстающих навыков - с учетом степени отставания
             low_skill_bonus = 0
