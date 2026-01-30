@@ -32,16 +32,25 @@ class TrainingPlanner:
 
         # копия, чтобы симулировать рост
         simulated_skills = self.player.skills.copy()
+        
+        # Словарь для отслеживания количества тренировок для каждого белого навыка
+        skill_training_counts = {skill: 0 for skill in self.white_skills}
 
         for _ in range(max_trainings):
             # Находим лучшую тренировку для следующего шага
-            best_training_id = self._find_best_training(simulated_skills)
+            best_training_id = self._find_best_training(simulated_skills, skill_training_counts)
             
             if best_training_id is None:
                 break
                 
             # Применяем тренировку к симулируемым навыкам
             self._apply_training(simulated_skills, best_training_id)
+            
+            # Обновляем счетчики тренировок для белых навыков
+            training_data = TRAININGS[best_training_id]
+            for skill in training_data["skills"]:
+                if skill in self.white_skills:
+                    skill_training_counts[skill] += 1
             
             # Добавляем тренировку в план
             if best_training_id in plan_items:
@@ -57,7 +66,7 @@ class TrainingPlanner:
 
         return list(plan_items.values())
 
-    def _find_best_training(self, skills: Dict[str, int]) -> str | None:
+    def _find_best_training(self, skills: Dict[str, int], skill_training_counts: Dict[str, int]) -> str | None:
         """
         Находит тренировку, которая лучше всего улучшит равномерность белых навыков.
         """
@@ -67,11 +76,14 @@ class TrainingPlanner:
         if not white_skill_values:
             return None
             
-        min_white = min(white_skill_values.values())
-        max_white = max(white_skill_values.values())
+        # Сначала определим, какие навыки наиболее отстают
+        sorted_white_skills = sorted(white_skill_values.items(), key=lambda x: x[1])
+        
+        # Выберем навыки с самыми низкими значениями как приоритетные для тренировки
+        lowest_skills = [skill for skill, value in sorted_white_skills[:4]]  # 4 самых слабых навыка
         
         best_training_id = None
-        best_improvement = -float('inf')
+        best_score = -float('inf')
         
         for tr_id, tr_data in TRAININGS.items():
             # Проверяем, есть ли белые навыки в этой тренировке
@@ -82,18 +94,31 @@ class TrainingPlanner:
             # Проверяем, есть ли серые навыки (чем их больше, тем хуже)
             training_gray_skills = set(tr_data["skills"]) & self.gray_skills
             
-            # Симулируем применение тренировки
-            simulated_after = skills.copy()
-            improvement_score = self._calculate_improvement(
-                simulated_after, tr_data, min_white, max_white
-            )
+            # Основная логика: штрафуем за серые навыки, премируем за покрытие отстающих навыков
+            score = 0
             
-            # Учитываем штраф за серые навыки
-            gray_penalty = math.log(len(training_gray_skills) + 1) * 5  # вес штрафа можно настроить
-            final_score = improvement_score - gray_penalty
+            # Штраф за серые навыки
+            gray_penalty = len(training_gray_skills) * 20  # усиленный штраф за серые навыки
             
-            if final_score > best_improvement:
-                best_improvement = final_score
+            # Премия за покрытие отстающих навыков
+            low_skill_bonus = 0
+            for skill in training_white_skills:
+                if skill in lowest_skills:
+                    low_skill_bonus += 15  # высокая премия за тренировку отстающих навыков
+            
+            # Премия за покрытие разнообразных белых навыков
+            diversity_bonus = len(training_white_skills) * 3
+            
+            # Штраф за повторное тренирование одного и того же навыка
+            repetition_penalty = 0
+            for skill in training_white_skills:
+                if skill in skill_training_counts:
+                    repetition_penalty += skill_training_counts[skill] * 2
+            
+            score = low_skill_bonus + diversity_bonus - gray_penalty - repetition_penalty
+            
+            if score > best_score:
+                best_score = score
                 best_training_id = tr_id
         
         return best_training_id
@@ -119,16 +144,12 @@ class TrainingPlanner:
         # Получаем новые значения белых навыков
         new_white_values = {s: temp_skills[s] for s in self.white_skills}
         
-        # Вычисляем новую разницу между min и max белыми навыками
-        new_min = min(new_white_values.values())
-        new_max = max(new_white_values.values())
+        # Вычисляем дисперсию (разброс) белых навыков до и после тренировки
+        original_variance = self._calculate_variance(list(original_white_values.values()))
+        new_variance = self._calculate_variance(list(new_white_values.values()))
         
-        # Улучшение = разница между старой и новой разницами
-        # Если разница уменьшилась, это улучшение
-        original_gap = current_max - current_min
-        new_gap = new_max - new_min
-        
-        gap_improvement = original_gap - new_gap  # положительное значение = улучшение
+        # Улучшение - это уменьшение дисперсии (чем меньше дисперсия, тем равномернее навыки)
+        variance_improvement = original_variance - new_variance
         
         # Также учитываем среднее значение белых навыков (чем выше, тем лучше)
         original_avg = sum(original_white_values.values()) / len(original_white_values)
@@ -136,9 +157,20 @@ class TrainingPlanner:
         avg_improvement = new_avg - original_avg
         
         # Комбинируем улучшения
-        total_improvement = gap_improvement * 2 + avg_improvement * 0.5  # веса можно настроить
+        total_improvement = variance_improvement * (-10) + avg_improvement * 0.5  # отрицательная дисперсия улучшает равномерность
         
         return total_improvement
+    
+    def _calculate_variance(self, values: List[int]) -> float:
+        """
+        Вычисляет дисперсию списка значений.
+        """
+        if len(values) <= 1:
+            return 0.0
+        
+        mean = sum(values) / len(values)
+        variance = sum((x - mean) ** 2 for x in values) / len(values)
+        return variance
 
     def _apply_training(self, skills: Dict[str, int], training_data_or_id: Dict | str) -> None:
         """
