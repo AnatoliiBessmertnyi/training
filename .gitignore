@@ -1,31 +1,22 @@
-```gitignore
-# Python cache files
+```
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# Logs and temporary files
-*.log
-*.tmp
-
-# Environment files
+# Dependencies
+.venv/
+venv/
 .env
 .env.local
 *.env.*
 
-# Coverage reports
-.coverage
-coverage/
-htmlcov/
+# Logs and temporary files
+*.log
+*.tmp
 
-# IDE files
+# Editors
 .vscode/
 .idea/
-*.swp
-*.swo
-
-# OS files
-.DS_Store
-Thumbs.db
 ```
