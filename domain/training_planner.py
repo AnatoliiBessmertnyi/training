@@ -118,8 +118,18 @@ class TrainingPlanner:
             # Основная логика: штрафуем за серые навыки, премируем за покрытие отстающих навыков
             score = 0
             
-            # Штраф за серые навыки
-            gray_penalty = len(training_gray_skills) * 20  # усиленный штраф за серые навыки
+            # Штраф за серые навыки - теперь учитываем уровень серых навыков
+            gray_penalty = 0
+            for skill in training_gray_skills:
+                # Чем выше значение серого навыка, тем больше штраф
+                skill_level = skills[skill]
+                if skill_level > 21:
+                    # Используем функцию сложности для серых навыков
+                    difficulty_factor = training_difficulty(skill_level, is_gray_skill=True)
+                    # Базовый штраф умножаем на фактор сложности
+                    gray_penalty += difficulty_factor * 5  # увеличенный штраф для высоких серых навыков
+                else:
+                    gray_penalty += 5  # базовый штраф для низких серых навыков
             
             # Премия за покрытие отстающих навыков - с учетом степени отставания
             low_skill_bonus = 0

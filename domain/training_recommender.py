@@ -40,7 +40,7 @@ class TrainingRecommender:
 
             # 🔴 ВАЖНОЕ ИЗМЕНЕНИЕ ЗДЕСЬ
             gain_score = sum(
-                deficit[s] / training_difficulty(self.player.skills[s])
+                deficit[s] / training_difficulty(self.player.skills[s], is_gray_skill=False)
                 for s in white_hit
             )
 

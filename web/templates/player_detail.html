@@ -352,6 +352,26 @@
                     {% endif %}
                 </span>
             </div>
+            <div class="stat-item">
+                <span class="stat-label">Разница (сильнейший-слабейший):</span>
+                <span class="stat-value" id="white-skill-diff">
+                    {% if player.skills %}
+                        {% set white_skill_values = [] %}
+                        {% for skill_id in white_skills %}
+                            {% if skill_id in player.skills %}
+                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if white_skill_values %}
+                            {{ (white_skill_values|max - white_skill_values|min) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    {% else %}
+                        0
+                    {% endif %}
+                </span>
+            </div>
         </div>
         
         <div class="highlights">
@@ -527,6 +547,9 @@ function saveSkillAndRefreshPlan(skillId, value) {
             document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
         }
         if (data.gray_skills_avg !== undefined) {
+        if (data.white_skill_difference !== undefined) {
+            document.getElementById("white-skill-diff").textContent = data.white_skill_difference;
+        }
             document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
         }
     })
