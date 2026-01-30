@@ -1,5 +1,14 @@
-# Documentation
-docs/backend_documentation.md
-docs/backend_documentation_updated.md
-docs/frontend_documentation.md
-docs/frontend_documentation_updated.md
+```
+# Compiled Python files
+*.pyc
+__pycache__/
+
+# Logs
+*.log
+server.log
+
+# Environment files
+.env
+.env.local
+*.env.*
+```

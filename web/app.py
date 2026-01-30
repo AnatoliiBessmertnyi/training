@@ -270,6 +270,18 @@ def update_skills_and_get_data(player_id):
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=training_count)
 
+    # Prepare plan data with training types (to match the format expected by player_detail.html)
+    plan_with_types = []
+    for item in plan:
+        training_type = TRAININGS.get(item.training_id, {}).get("type", "unknown")
+        plan_with_types.append({
+            'training_id': item.training_id,
+            'name': item.name,
+            'repeats': item.repeats,
+            'skills': item.skills,
+            'type': training_type
+        })
+
     # Сортируем навыки
     # Only consider white skills for weak/strong skills display
     white_skill_items = [(skill_id, player_data["skills"][skill_id]) for skill_id in white_skills 
@@ -281,7 +293,7 @@ def update_skills_and_get_data(player_id):
 
     # Возвращаем JSON
     return jsonify({
-        "plan_html": render_template("plan_only.html", plan=plan, skill_names=SKILLS),
+        "plan_html": render_template("plan_only.html", plan=plan_with_types, skill_names=SKILLS),
         "weakest_skills": [
             {"name": SKILLS[k], "value": v} for k, v in weakest
         ],
