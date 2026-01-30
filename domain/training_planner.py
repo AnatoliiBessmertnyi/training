@@ -15,19 +15,22 @@ def training_difficulty(skill_level: int, is_gray_skill: bool = False) -> float:
     Higher skill levels have higher difficulty factors.
     """
     if is_gray_skill:
-        # For gray skills, we might want a different calculation
-        # As the gray skill level increases, it becomes harder to train through
-        # so we return a factor that increases with the skill level
-        if skill_level <= 20:
-            return 1.0
+        # For gray skills, we want much higher penalty especially for lower levels
+        # to significantly slow down gray skill development
+        if skill_level <= 5:
+            return 5.0  # Very high penalty for very low gray skills
+        elif skill_level <= 10:
+            return 4.0  # High penalty
+        elif skill_level <= 20:
+            return 3.0  # High penalty for low gray skills
         elif skill_level <= 50:
-            return 1.2
-        elif skill_level <= 100:
-            return 1.5
-        elif skill_level <= 200:
-            return 2.0
-        else:
             return 2.5
+        elif skill_level <= 100:
+            return 2.0
+        elif skill_level <= 200:
+            return 1.5
+        else:
+            return 1.2  # Lower penalty for high gray skills since they're harder to improve anyway
     else:
         # For white skills
         if skill_level <= 50:
@@ -151,18 +154,15 @@ class TrainingPlanner:
             # Основная логика: штрафуем за серые навыки, премируем за покрытие отстающих навыков
             score = 0
             
-            # Штраф за серые навыки - теперь учитываем уровень серых навыков
+            # Штраф за серые навыки - усиленный штраф, особенно для низкоуровневых серых навыков
             gray_penalty = 0
             for skill in training_gray_skills:
                 # Чем выше значение серого навыка, тем больше штраф
                 skill_level = skills[skill]
-                if skill_level > 21:
-                    # Используем функцию сложности для серых навыков
-                    difficulty_factor = training_difficulty(skill_level, is_gray_skill=True)
-                    # Базовый штраф умножаем на фактор сложности
-                    gray_penalty += difficulty_factor * 5  # увеличенный штраф для высоких серых навыков
-                else:
-                    gray_penalty += 5  # базовый штраф для низких серых навыков
+                # Используем функцию сложности для серых навыков
+                difficulty_factor = training_difficulty(skill_level, is_gray_skill=True)
+                # Увеличиваем штраф, особенно для низких серых навыков
+                gray_penalty += difficulty_factor * 10  # увеличенный штраф
             
             # Премия за покрытие отстающих навыков - с учетом степени отставания
             low_skill_bonus = 0
@@ -174,10 +174,17 @@ class TrainingPlanner:
                     gap_to_min = skill_value - min_skill_value
                     # Используем комбинацию разницы с максимумом и разницы с минимумом для лучшей балансировки
                     improvement_potential = gap_to_max - gap_to_min * 0.3
-                    low_skill_bonus += max(0, improvement_potential) * 0.8  # премия пропорциональна потенциалу улучшения
-            
+                    low_skill_bonus += max(0, improvement_potential) * 1.2  # увеличил премию
+
             # Премия за покрытие разнообразных белых навыков
-            diversity_bonus = len(training_white_skills) * 3
+            diversity_bonus = len(training_white_skills) * 5  # увеличил премию за разнообразие
+            
+            # Премия за равномерность - тренировки, которые помогают уменьшить разрыв между навыками
+            balance_bonus = 0
+            if len(training_white_skills) > 1:
+                # Если тренировка покрывает несколько белых навыков, особенно те, что отстают
+                covered_low_skills = training_white_skills.intersection(lowest_skills)
+                balance_bonus = len(covered_low_skills) * 2.0 * (len(training_white_skills) / len(self.white_skills))
             
             # Штраф за повторное тренирование одного и того же навыка
             repetition_penalty = 0
@@ -194,7 +201,7 @@ class TrainingPlanner:
                         skill_deviation_from_mean = abs(skills[skill] - mean_value)
                         if skill_deviation_from_mean > std_dev * 0.5:  # если навык значительно выше среднего
                             # Чем дальше от среднего, тем больше штраф
-                            repetition_penalty += min(25, skill_deviation_from_mean * 1.0)
+                            repetition_penalty += min(25, skill_deviation_from_mean * 1.5)  # увеличил штраф
             
             # Добавим премию за снижение ожидаемой дисперсии
             # Предскажем, как изменится дисперсия при применении этой тренировки
@@ -209,14 +216,12 @@ class TrainingPlanner:
             
             # Если новая дисперсия будет меньше текущей, добавляем премию
             if new_variance < variance:
-                variance_reduction_bonus = (variance - new_variance) * 1.0
-                score += variance_reduction_bonus
+                variance_reduction_bonus = (variance - new_variance) * 2.0  # увеличил множитель
+                score = low_skill_bonus + diversity_bonus + balance_bonus + variance_reduction_bonus - gray_penalty - repetition_penalty
             else:
                 # Если дисперсия увеличивается, применяем штраф
-                variance_increase_penalty = (new_variance - variance) * 0.5
-                score -= variance_increase_penalty
-            
-            score = low_skill_bonus + diversity_bonus - gray_penalty - repetition_penalty
+                variance_increase_penalty = (new_variance - variance) * 1.0  # увеличил штраф
+                score = low_skill_bonus + diversity_bonus + balance_bonus - gray_penalty - repetition_penalty - variance_increase_penalty
             
             if score > best_score:
                 best_score = score
