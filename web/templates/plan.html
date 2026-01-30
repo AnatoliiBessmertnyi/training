@@ -11,7 +11,7 @@
 <h2>Рекомендуемые тренировки</h2>
 <div>
     {% for item in plan %}
-    <div class="recommendation-item">
+    <div class="recommendation-item {{ item.type }}">
         <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
         <p><em>Качает навыки:</em> 
         {% for skill in item.skills %}

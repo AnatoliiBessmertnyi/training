@@ -1,4 +1,5 @@
-```
-__pycache__/
-*.pyc
-```
+# Documentation
+docs/backend_documentation.md
+docs/backend_documentation_updated.md
+docs/frontend_documentation.md
+docs/frontend_documentation_updated.md

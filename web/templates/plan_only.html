@@ -1,7 +1,7 @@
 {% if plan %}
 <div>
     {% for item in plan %}
-    <div class="recommendation-item">
+    <div class="recommendation-item {{ item.type }}">
         <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
         <p><em>Качает навыки:</em> 
         {% if item.skills %}
