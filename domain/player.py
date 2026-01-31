@@ -4,12 +4,14 @@ from config.positions import POSITIONS
 
 
 class Player:
-    def __init__(self, name: str, positions: List[str], skills: Dict[str, int]):
+    def __init__(self, id: str, name: str, positions: List[str], skills: Dict[str, int]):
         """
+        :param id: ID игрока
         :param name: Имя игрока
         :param positions: Список id позиций игрока (1-3)
         :param skills: Словарь всех навыков {id: значение}
         """
+        self.id = id
         self.name = name
         self.positions = positions
         self.skills = skills.copy()  # {skill_id: value}
@@ -57,7 +59,5 @@ class Player:
             if skill in self.skills:
                 self.skills[skill] += gain
                 # Максимальное значение навыка теперь 400, как в тренировочном симуляторе
-                from domain.training_simulator import MAX_SKILL_VALUE
-
-                if self.skills[skill] > MAX_SKILL_VALUE:
-                    self.skills[skill] = MAX_SKILL_VALUE
+                if self.skills[skill] > 400:
+                    self.skills[skill] = 400

@@ -76,6 +76,7 @@ def player_detail(player_id):
             # Rebuild plan after update
             skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
             player_obj = Player(
+                id=player_data["id"],
                 name=player_data["name"],
                 positions=player_data["positions"] if player_data["positions"] else [],
                 skills=skills,
@@ -117,6 +118,7 @@ def player_detail(player_id):
     # On GET, show player and initial plan
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
+        id=player_data["id"],
         name=player_data["name"],
         positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills,
@@ -169,6 +171,7 @@ def accept_training(player_id):
 
         # Create Player object to use its methods
         player_obj = Player(
+            id=player_data["id"],
             name=player_data["name"],
             positions=player_data["positions"] if player_data["positions"] else [],
             skills=player_data["skills"],
@@ -203,6 +206,7 @@ def accept_all_trainings(player_id):
 
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
+        id=player_data["id"],
         name=player_data["name"],
         positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills,
@@ -275,6 +279,7 @@ def update_skills_and_get_data(player_id):
     # Пересчитываем план
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
+        id=player_data["id"],
         name=player_data["name"],
         positions=player_data["positions"] if player_data["positions"] else [],
         skills=skills,
