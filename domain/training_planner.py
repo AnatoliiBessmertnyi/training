@@ -33,7 +33,7 @@ def training_difficulty(
         elif skill_level <= 30:
             base_penalty = 8  # Very high penalty
         elif skill_level <= 35:
-            base_penalty = 9 # Very high penalty
+            base_penalty = 9  # Very high penalty
         elif skill_level <= 40:
             base_penalty = 10  # Very high penalty
         else:
