@@ -15,10 +15,10 @@ def training_difficulty(skill_value: int, is_gray_skill: bool = False) -> float:
             base_multiplier = 2.5
         else:
             base_multiplier = 4.0
-        
+
         # Увеличиваем штраф в зависимости от значения навыка (чем выше, тем дороже)
-        if skill_value > 21:
-            penalty_factor = 1.0 + (skill_value - 21) * 0.05  # Увеличиваем штраф по мере роста навыка
+        if skill_value > 20:
+            penalty_factor = 1.0 + (skill_value - 20) * 0.05  # Увеличиваем штраф по мере роста навыка
             return base_multiplier * penalty_factor
         else:
             return base_multiplier
