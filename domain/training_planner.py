@@ -141,26 +141,67 @@ class TrainingPlanner:
         )
         std_dev = variance**0.5  # стандартное отклонение
 
-        # Определяем навыки, которые отстают, на основе абсолютной разницы и процентного соотношения
-        # Чем больше разница между минимумом и максимумом, тем больше приоритет у отстающих навыков
-        threshold_for_low_skills = min_skill_value + (
-            skill_gap * 0.4
-        )  # увеличим порог для большего охвата отстающих навыков
-
+        # Определяем отстающие навыки более комплексно
         lowest_skills = []
-        for skill, value in sorted_white_skills:
-            if value <= threshold_for_low_skills:
-                lowest_skills.append(skill)
-
-        # Если разрыв маленький, то используем другой подход - фокус на уменьшении разницы
-        if skill_gap < 25 and len(sorted_white_skills) > 1:
-            # Когда навыки уже близки, нужно фокусироваться на самых отстающих
-            target_range = min(
-                3, len(sorted_white_skills)
-            )  # количество отстающих навыков для фокуса
+        
+        # Используем плавающую систему весов вместо жестких условий
+        # Чем больше разница между навыками, тем больше акцент на самых слабых
+        # Чем меньше разница, тем больше акцент на равномерное развитие
+        
+        # Определяем пороги на основе статистики
+        weak_threshold = mean_value - std_dev * 0.5 if std_dev > 0 else min_skill_value + 5
+        moderate_threshold = mean_value
+        
+        # Определяем навыки по категориям
+        very_weak_skills = [skill for skill, value in sorted_white_skills if value <= weak_threshold]
+        weak_skills = [skill for skill, value in sorted_white_skills if weak_threshold < value <= moderate_threshold]
+        
+        # Выбираем подходящую стратегию взвешивания
+        if skill_gap > 50:
+            # При очень большой разнице фокус на самых слабых навыках
+            lowest_skills = very_weak_skills if very_weak_skills else weak_skills
+        elif skill_gap > 25:
+            # При средней разнице - более широкий охват
+            lowest_skills = very_weak_skills + weak_skills
+        else:
+            # При малой разнице - фокус на минимальной разнице и максимальной равномерности
+            # Вместо выбора только слабых навыков, теперь будем использовать гибкий подход
+            # где учитываются не только самые слабые, но и другие факторы равномерности
+            lowest_skills = very_weak_skills + weak_skills
+        
+        # Если не нашли подходящих навыков, берем несколько самых слабых
+        if not lowest_skills:
+            target_range = min(3, len(sorted_white_skills))
             lowest_skills = [
                 skill for skill, value in sorted_white_skills[:target_range]
             ]
+
+        # ДОПОЛНЕНИЕ: Теперь добавим более комплексный подход для выбора навыков для развития
+        # Когда разница между навыками становится небольшой, но все они высокие,
+        # мы должны стремиться к равномерному развитию, а не только к поднятию слабых
+        
+        # Определяем, насколько равномерно распределены навыки
+        # Если навыки уже достаточно близки друг к другу, нужно стремиться к равномерному поднятию
+        if skill_gap <= 30 and len(white_skill_values) > 1:
+            # Когда разница небольшая, но все равно есть дисбаланс - фокус на равномерное развитие
+            # Определяем навыки, которые наиболее далеки от среднего (в обе стороны)
+            balanced_focus_skills = []
+            
+            # Определяем навыки, которые ниже среднего (потенциальные кандидаты для повышения)
+            below_average_skills = [skill for skill, value in sorted_white_skills if value < mean_value]
+            
+            # Если разница между навыками стала небольшой, но все еще есть отстающие - 
+            # нужно учитывать не только самые слабые, но и стремиться к равномерности
+            if below_average_skills:
+                # Сортируем отстающие навыки по удаленности от среднего
+                below_average_sorted = sorted(below_average_skills, key=lambda s: skills[s])
+                
+                # Выбираем не только самые слабые, но и следующие по уровню
+                # чтобы обеспечить более равномерное развитие
+                balanced_focus_skills.extend(below_average_sorted[:min(3, len(below_average_sorted))])
+                
+                # Добавляем к lowest_skills эти сбалансированные навыки
+                lowest_skills = list(set(lowest_skills + balanced_focus_skills))
 
         best_training_id = None
         best_score = -float("inf")
@@ -224,6 +265,17 @@ class TrainingPlanner:
                     * (len(training_white_skills) / len(self.white_skills))
                 )
 
+            # ДОПОЛНИТЕЛЬНО: Балансировка на основе разницы между максимальным и минимальным белыми навыками
+            # Чем больше разница, тем важнее тренировки, которые помогают её уменьшить
+            balance_importance_bonus = 0
+            if skill_gap > 30:  # При большой разнице между навыками
+                # Определим, насколько тренировка способствует уменьшению разницы
+                # Считаем, сколько из тренируемых навыков являются "отстающими"
+                covered_weakest_skills = training_white_skills.intersection(set(lowest_skills))
+                if covered_weakest_skills:
+                    # Чем больше отстающих навыков тренируется, тем выше премия
+                    balance_importance_bonus = len(covered_weakest_skills) * skill_gap * 0.3
+
             # Штраф за повторное тренирование одного и того же навыка
             repetition_penalty = 0
             for skill in training_white_skills:
@@ -268,6 +320,7 @@ class TrainingPlanner:
                     + diversity_bonus
                     + balance_bonus
                     + variance_reduction_bonus
+                    + balance_importance_bonus  # добавляем новый бонус
                     - gray_penalty
                     - repetition_penalty
                 )
@@ -280,10 +333,40 @@ class TrainingPlanner:
                     low_skill_bonus
                     + diversity_bonus
                     + balance_bonus
+                    + balance_importance_bonus  # добавляем новый бонус
                     - gray_penalty
                     - repetition_penalty
                     - variance_increase_penalty
                 )
+
+            # ДОПОЛНЕНИЕ: Добавим дополнительную логику для улучшения равномерности
+            # особенно когда все навыки уже на высоком уровне
+            if mean_value > 150:  # Когда средний уровень навыков уже высокий
+                # Добавим премию за тренировки, которые помогают уравнять навыки
+                # на высоком уровне, а не просто поднимают самые слабые
+                
+                # Проверим, насколько равномерно тренировка влияет на белые навыки
+                # Если она поднимает только самые сильные навыки, это может ухудшить равномерность
+                if len(training_white_skills) > 1:
+                    # Проверим, насколько равномерно распределены значения среди тренируемых навыков
+                    trained_white_values = [skills[skill] for skill in training_white_skills if skill in skills]
+                    if trained_white_values:
+                        trained_mean = sum(trained_white_values) / len(trained_white_values)
+                        trained_std_dev = (sum((x - trained_mean) ** 2 for x in trained_white_values) / len(trained_white_values)) ** 0.5
+                        
+                        # Если среди тренируемых навыков большие различия, это может быть неоптимально
+                        # при высоком уровне навыков, если тренировка фокусируется на самых сильных
+                        if trained_std_dev > std_dev * 0.5:  # Если разброс среди тренируемых выше среднего
+                            # Проверим, какие навыки из тренируемых самые сильные
+                            strong_trained_skills = [skill for skill in training_white_skills if skills[skill] > trained_mean + trained_std_dev * 0.3]
+                            
+                            # Если тренировка фокусируется на сильных навыках при высоком уровне, штрафуем
+                            if len(strong_trained_skills) > len(training_white_skills) // 2:
+                                score -= len(strong_trained_skills) * 2
+                                
+                        # Добавим премию за тренировки, которые поднимают слабые навыки среди тренируемых
+                        weak_trained_skills = [skill for skill in training_white_skills if skills[skill] < trained_mean - trained_std_dev * 0.3]
+                        score += len(weak_trained_skills) * 1.5
 
             if score > best_score:
                 best_score = score
