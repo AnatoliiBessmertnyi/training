@@ -19,7 +19,7 @@ def get_position_penalty_multiplier(positions: list[str]) -> float:
         "DMC": 2,
         "MC": 3,
         "AMC": 3,
-        "DC": 2,
+        "DC": 1,
     }  # Central positions often have many gray skills
     count_position = len(positions)
     if count_position == 1:
@@ -42,31 +42,37 @@ def training_difficulty(
     if is_gray_skill:
         # For gray skills, up to 20 it's still manageable, after 20 increasingly high penalty
         if skill_level <= 5:
-            base_penalty = 1.0  # Low penalty for very low gray skills
+            base_penalty = 4  # Low penalty for very low gray skills
         elif skill_level <= 10:
-            base_penalty = 1.2  # Low penalty
+            base_penalty = 5  # High penalty after 20
+        elif skill_level <= 15:
+            base_penalty = 6  # High penalty after 20
         elif skill_level <= 20:
-            base_penalty = 1.5  # Moderate penalty for gray skills up to 20
-        elif skill_level <= 50:
-            base_penalty = 3.0  # High penalty after 20
-        elif skill_level <= 100:
-            base_penalty = 4.0  # Very high penalty
-        elif skill_level <= 200:
-            base_penalty = 4.5  # Extremely high penalty
+            base_penalty = 7  # Very high penalty
+        elif skill_level <= 25:
+            base_penalty = 8  # Very high penalty
+        elif skill_level <= 30:
+            base_penalty = 9  # Very high penalty
+        elif skill_level <= 35:
+            base_penalty = 10  # Very high penalty
+        elif skill_level <= 40:
+            base_penalty = 11  # Very high penalty
         else:
-            base_penalty = 5.0  # Maximum penalty for high gray skills
+            base_penalty = 12  # Maximum penalty for high gray skills
 
         return base_penalty * position_penalty_multiplier
     else:
         # For white skills
-        if skill_level <= 50:
+        if skill_level <= 80:
             return 1.0
-        elif skill_level <= 100:
+        elif skill_level <= 120:
             return 1.1
-        elif skill_level <= 200:
+        elif skill_level <= 140:
             return 1.2
-        elif skill_level <= 300:
+        elif skill_level <= 200:
             return 1.3
+        elif skill_level <= 250:
+            return 1.4
         else:
             return 1.5
 
@@ -87,7 +93,6 @@ class TrainingPlanner:
         self.position_penalty_multiplier = get_position_penalty_multiplier(
             player.positions
         )
-        print(self.position_penalty_multiplier, 'position_penalty_multiplier')
 
     def plan(self, max_trainings: int = 50) -> List[TrainingPlanItem]:
         """
