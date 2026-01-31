@@ -87,21 +87,46 @@
         "DC"
       ],
       "skills": {
-        "tackling": 286,
-        "marking": 295,
-        "positioning": 281,
-        "heading": 256,
-        "bravery": 296,
-        "passing": 47,
-        "dribbling": 36,
-        "cross": 27,
+        "tackling": 216,
+        "marking": 191,
+        "positioning": 184,
+        "heading": 158,
+        "bravery": 198,
+        "passing": 34,
+        "dribbling": 16,
+        "cross": 22,
         "shooting": 33,
         "finishing": 26,
-        "physical": 316,
-        "strength": 258,
-        "aggressiveness": 288,
-        "pace": 21,
-        "creativity": 19
+        "physical": 158,
+        "strength": 140,
+        "aggressiveness": 152,
+        "pace": 1,
+        "creativity": 1
+      },
+      "training_count": 30
+    },
+    {
+      "id": "ffc4f365-4ba3-48d9-a5f2-45052cf6ff5a",
+      "name": "test_dc",
+      "positions": [
+        "DC"
+      ],
+      "skills": {
+        "tackling": 1,
+        "marking": 1,
+        "positioning": 1,
+        "heading": 1,
+        "bravery": 1,
+        "passing": 1,
+        "dribbling": 1,
+        "cross": 1,
+        "shooting": 1,
+        "finishing": 1,
+        "physical": 1,
+        "strength": 1,
+        "aggressiveness": 1,
+        "pace": 1,
+        "creativity": 1
       },
       "training_count": 30
     }
