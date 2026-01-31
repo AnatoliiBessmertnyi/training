@@ -6,7 +6,7 @@ Reset DC player to initial state and test the improved algorithm
 from storage.player_repository import PlayerRepository
 
 def reset_dc_player():
-    """Reset the DC player to initial state with all skills at 1"""
+    """Reset the DC player to initial state with proper starting values"""
     repo = PlayerRepository()
     
     # Find the test_dc player
@@ -14,16 +14,32 @@ def reset_dc_player():
     player_data = repo.get(player_id)
     
     if player_data:
-        # Reset all skills to 1
-        for skill_key in player_data["skills"]:
-            player_data["skills"][skill_key] = 1
+        # Set initial skill values as they were originally
+        initial_skills = {
+            "tackling": 121,
+            "marking": 131,
+            "positioning": 131,
+            "heading": 71,
+            "bravery": 121,
+            "passing": 1,
+            "dribbling": 1,
+            "cross": 1,
+            "shooting": 1,
+            "finishing": 1,
+            "physical": 171,
+            "strength": 101,
+            "aggressiveness": 191,
+            "pace": 1,
+            "creativity": 1
+        }
         
+        player_data["skills"] = initial_skills
         # Reset training count
         player_data["training_count"] = 0
         
         # Save the updated player
         repo.update(player_data)
-        print(f"Player {player_data['name']} reset to initial state (all skills = 1)")
+        print(f"Player {player_data['name']} reset to initial state")
     else:
         print("DC test player not found!")
 

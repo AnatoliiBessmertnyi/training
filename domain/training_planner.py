@@ -40,41 +40,43 @@ def training_difficulty(
     For gray skills: up to 20 it's still manageable, but after 20 very high penalty
     """
     if is_gray_skill:
-        # For gray skills, severely penalize even moderate levels to keep average under 20
+        # For gray skills, we want to encourage some development up to 20, then severe penalty
+        # Lower penalties for lower gray skill levels to allow some development
         if skill_level <= 5:
-            base_penalty = 10  # Much higher penalty for very low gray skills
+            base_penalty = 1.0  # Low penalty to allow initial development
         elif skill_level <= 10:
-            base_penalty = 15  # Very high penalty after 10
+            base_penalty = 2.0  # Moderate penalty
         elif skill_level <= 15:
-            base_penalty = 20  # Extremely high penalty after 15
+            base_penalty = 4.0  # Higher penalty
         elif skill_level <= 20:
-            base_penalty = 30  # Prohibitive penalty after 20
+            base_penalty = 12.0  # Significant penalty after 20
         elif skill_level <= 25:
-            base_penalty = 40  # Prohibitive penalty
+            base_penalty = 25.0  # High penalty
         elif skill_level <= 30:
-            base_penalty = 50  # Prohibitive penalty
+            base_penalty = 40.0  # Very high penalty
         elif skill_level <= 35:
-            base_penalty = 60  # Prohibitive penalty
+            base_penalty = 60.0  # Prohibitive penalty
         elif skill_level <= 40:
-            base_penalty = 70  # Prohibitive penalty
+            base_penalty = 80.0  # Prohibitive penalty
         else:
-            base_penalty = 80  # Maximum penalty for high gray skills
+            base_penalty = 100.0  # Maximum penalty for high gray skills
 
         return base_penalty * position_penalty_multiplier
     else:
-        # For white skills
+        # For white skills - increase penalties to promote more even distribution
+        # Higher penalties for skills that are already high compared to others
         if skill_level <= 80:
             return 1.0
         elif skill_level <= 120:
-            return 1.1
+            return 1.2  # Increased from 1.1
         elif skill_level <= 140:
-            return 1.2
+            return 1.4  # Increased from 1.2
         elif skill_level <= 200:
-            return 1.3
+            return 1.8  # Increased from 1.3
         elif skill_level <= 250:
-            return 1.4
+            return 2.5  # Increased from 1.4
         else:
-            return 1.5
+            return 3.5  # Increased from 1.5
 
 
 @dataclass
@@ -167,17 +169,22 @@ class TrainingPlanner:
 
         # Определяем навыки, которые отстают, на основе абсолютной разницы и процентного соотношения
         # Чем больше разница между минимумом и максимумом, тем больше приоритет у отстающих навыков
+        # Также учитываем стандартное отклонение для более точного определения отстающих навыков
         threshold_for_low_skills = min_skill_value + (
-            skill_gap * 0.4
+            skill_gap * 0.5
         )  # увеличим порог для большего охвата отстающих навыков
+        
+        # Также добавим порог на основе стандартного отклонения
+        deviation_based_threshold = mean_value - std_dev * 0.5
 
         lowest_skills = []
         for skill, value in sorted_white_skills:
-            if value <= threshold_for_low_skills:
+            # Навык считается отстающим, если он ниже хотя бы одного из порогов
+            if value <= threshold_for_low_skills or value <= deviation_based_threshold:
                 lowest_skills.append(skill)
 
         # Если разрыв маленький, то используем другой подход - фокус на уменьшении разницы
-        if skill_gap < 25 and len(sorted_white_skills) > 1:
+        if skill_gap < 20 and len(sorted_white_skills) > 1:
             # Когда навыки уже близки, нужно фокусироваться на самых отстающих
             target_range = min(
                 3, len(sorted_white_skills)
@@ -228,10 +235,11 @@ class TrainingPlanner:
                     gap_to_max = max_skill_value - skill_value
                     gap_to_min = skill_value - min_skill_value
                     # Используем комбинацию разницы с максимумом и разницы с минимумом для лучшей балансировки
-                    improvement_potential = gap_to_max - gap_to_min * 0.3
+                    # Увеличиваем вес для навыков, которые ближе к минимуму
+                    improvement_potential = gap_to_max * 1.5 - gap_to_min * 0.2
                     low_skill_bonus += (
-                        max(0, improvement_potential) * 1.2
-                    )  # увеличил премию
+                        max(0, improvement_potential) * 1.5
+                    )  # увеличили премию
 
             # Премия за покрытие разнообразных белых навыков
             diversity_bonus = (
@@ -245,15 +253,33 @@ class TrainingPlanner:
                 covered_low_skills = training_white_skills.intersection(lowest_skills)
                 balance_bonus = (
                     len(covered_low_skills)
-                    * 2.0
+                    * 5.0  # увеличил бонус за покрытие отстающих навыков
                     * (len(training_white_skills) / len(self.white_skills))
                 )
+                
+            # Также добавим бонус за уменьшение разницы между навыками
+            skill_gap_reduction_bonus = 0
+            if len(training_white_skills) > 1 and len(lowest_skills) > 1:
+                # Если тренировка затрагивает белые навыки, особенно отстающие
+                # и если есть разница между навыками
+                if skill_gap > 10:  # если разница больше 10
+                    covered_weak_skills = training_white_skills.intersection(lowest_skills)
+                    skill_gap_reduction_bonus = len(covered_weak_skills) * (skill_gap / 10.0) * 2.0
+                    balance_bonus += skill_gap_reduction_bonus
 
             # Штраф за повторное тренирование одного и того же навыка
             repetition_penalty = 0
             for skill in training_white_skills:
                 if skill in skill_training_counts:
-                    repetition_penalty += skill_training_counts[skill] * 2
+                    # Увеличиваем штраф за тренировку уже сильных навыков
+                    skill_value = skills[skill]
+                    # Чем выше уровень навыка, тем больше штраф за его повторное тренирование
+                    base_repetition_penalty = skill_training_counts[skill] * 2
+                    if skill_value > max_skill_value - 20:  # если навык в топе
+                        base_repetition_penalty *= 2.0  # удвоенный штраф для сильных навыков
+                    elif skill_value > max_skill_value - 40:  # если близок к топу
+                        base_repetition_penalty *= 1.5  # полуторный штраф
+                    repetition_penalty += base_repetition_penalty
 
             # Дополнительная логика: если навыки уже достаточно близки, штрафуем за тренировки,
             # которые усиливают сильные навыки
@@ -270,7 +296,7 @@ class TrainingPlanner:
                                 25, skill_deviation_from_mean * 1.5
                             )  # увеличил штраф
 
-            # Добавим премию за снижение ожидаемой дисперсии
+            # Добавим премию за снижение ожидаемой дисперсии белых навыков
             # Предскажем, как изменится дисперсия при применении этой тренировки
             temp_skills = skills.copy()
             for skill_id in tr_data["skills"]:
@@ -281,6 +307,13 @@ class TrainingPlanner:
             new_mean = sum(new_white_values) / len(new_white_values)
             new_variance = sum((x - new_mean) ** 2 for x in new_white_values) / len(
                 new_white_values
+            )
+            
+            # Рассчитаем текущую дисперсию белых навыков
+            current_white_values = [skills[skill] for skill in self.white_skills]
+            current_white_mean = sum(current_white_values) / len(current_white_values)
+            current_white_variance = sum((x - current_white_mean) ** 2 for x in current_white_values) / len(
+                current_white_values
             )
 
             # Проверим общий средний уровень навыков (все навыки)
@@ -295,10 +328,10 @@ class TrainingPlanner:
                 global_cap_penalty = gray_penalty * excess_ratio * 2.0  # Умножаем на существующий gray_penalty
 
             # Если новая дисперсия будет меньше текущей, добавляем премию
-            if new_variance < variance:
-                variance_reduction_bonus = (
-                    variance - new_variance
-                ) * 2.0  # увеличил множитель
+            variance_reduction_bonus = 0
+            if new_variance < current_white_variance:
+                # Чем больше снижение дисперсии, тем больше премия
+                variance_reduction_bonus = (current_white_variance - new_variance) * 5.0  # увеличил множитель
                 score = (
                     low_skill_bonus
                     + diversity_bonus
@@ -310,9 +343,7 @@ class TrainingPlanner:
                 )
             else:
                 # Если дисперсия увеличивается, применяем штраф
-                variance_increase_penalty = (
-                    new_variance - variance
-                ) * 1.0  # увеличил штраф
+                variance_increase_penalty = (new_variance - current_white_variance) * 3.0  # увеличил штраф за увеличение дисперсии
                 score = (
                     low_skill_bonus
                     + diversity_bonus
