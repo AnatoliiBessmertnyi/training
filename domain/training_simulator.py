@@ -21,8 +21,7 @@ def simulate_training(
 
     for skill in affected_skills:
         new_skills[skill] = min(
-            MAX_SKILL_VALUE,
-            new_skills.get(skill, 1) + gain_per_skill
+            MAX_SKILL_VALUE, new_skills.get(skill, 1) + gain_per_skill
         )
 
     return new_skills

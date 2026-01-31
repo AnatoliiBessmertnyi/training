@@ -4,49 +4,114 @@
 
 {% block content %}
 <style>
+    /* Override base container restrictions for this page */
+    body > div.container {
+        max-width: none;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+    }
+    
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f5f7fa;
-        color: #333;
+        background-color: var(--bg-primary);
+        color: var(--text-primary);
         padding: 20px;
+        overflow-x: auto; /* Allow horizontal scrolling for the entire page if needed */
     }
 
     .container-flex {
         display: flex;
-        gap: 2rem;
-        max-width: 1200px;
+        gap: 1.5rem;
+        max-width: none;
+        width: 100%;
         margin: 0 auto;
-        background: white;
+        background: var(--bg-secondary);
         border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border-color);
+        overflow-x: auto;  /* Enable horizontal scrolling if needed */
+        overflow-y: hidden;
+        min-height: 80vh;
+        padding: 20px;
     }
 
-    .col-skills, .col-plan {
-        padding: 2rem;
+    .col-stats, .col-skills, .col-plan {
+        padding: 1.5rem;
+        min-width: 300px;  /* Minimum width for each column to ensure readability */
+    }
+
+    .col-stats {
+        flex: 0 0 320px;
+        border-right: 1px solid var(--border-color);
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
     .col-skills {
-        flex: 1;
-        border-right: 1px solid #eee;
+        flex: 2;
+        border-right: 1px solid var(--border-color);
+        min-width: 400px;
+        overflow-x: auto;  /* Allow horizontal scroll for content inside */
     }
 
     .col-plan {
-        flex: 1;
+        flex: 1.5;
+        min-width: 350px;
+        overflow-x: auto;  /* Allow horizontal scroll for content inside */
+    }
+
+    /* Statistics card */
+    .stats-card {
+        background: var(--bg-tertiary);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-blue);
+    }
+
+    .stat-item {
+        display: flex;
+        justify-content: space-between;
+        margin: 0.5rem 0;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .stat-label {
+        font-weight: 500;
+        color: var(--text-secondary);
+    }
+
+    .stat-value {
+        font-weight: 600;
+        color: var(--accent-green);
+    }
+    
+    .player-info {
+        background: var(--bg-tertiary);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-blue);
     }
 
     h1, h2 {
-        color: #2c3e50;
+        color: var(--text-primary);
         margin-bottom: 1rem;
+        border-bottom: 2px solid var(--accent-blue);
+        padding-bottom: 10px;
     }
 
     /* Highlight для слабых/перекачанных навыков */
     .highlights {
-        background: #fef7e0;
+        background: var(--bg-tertiary);
         padding: 15px;
         border-radius: 8px;
         margin-bottom: 20px;
-        border-left: 4px solid #f59e0b;
+        border-left: 4px solid var(--accent-yellow);
     }
 
     .highlight-item {
@@ -55,11 +120,11 @@
     }
 
     .highlight-item.weak {
-        color: #dc2626;
+        color: var(--accent-red);
     }
 
     .highlight-item.over {
-        color: #059669;
+        color: var(--accent-green);
     }
 
     .skill-input {
@@ -68,27 +133,29 @@
         gap: 10px;
         margin-bottom: 12px;
         padding: 10px;
-        background: #f9fafc;
+        background: var(--bg-tertiary);
         border-radius: 6px;
         transition: background 0.2s ease;
     }
 
     .skill-input:hover {
-        background: #edf2f7;
+        background: #2a2a2a;
     }
 
     .skill-input label {
         width: 150px;
         font-weight: 600;
-        color: #2c3e50;
+        color: var(--text-primary);
     }
 
     .skill-input input[type="number"] {
         width: 80px;
         padding: 6px 8px;
-        border: 1px solid #ccc;
+        background-color: var(--bg-tertiary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         font-size: 1rem;
+        color: var(--text-primary);
         -moz-appearance: textfield;
     }
 
@@ -106,9 +173,9 @@
     .adjustment-buttons button {
         padding: 4px 8px;
         font-size: 0.85rem;
-        border: 1px solid #ddd;
-        background: #e0e7ff;
-        color: #4f46e5;
+        border: 1px solid var(--border-color);
+        background: var(--btn-bg);
+        color: var(--text-primary);
         border-radius: 4px;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -120,28 +187,28 @@
     }
 
     .adjustment-buttons button:hover {
-        background: #c7d2fe;
+        background: var(--btn-hover);
     }
 
     .gray-skill {
         opacity: 0.7;
-        background: #f0f0f0 !important;
+        background: #2a2a2a !important;
         border-left: 3px solid #a0aec0;
     }
 
     .mass-adjustment {
         margin-top: 20px;
         padding: 15px;
-        background: #f0f4ff;
+        background: var(--bg-tertiary);
         border-radius: 8px;
     }
 
     .mass-adjustment button {
         padding: 8px 16px;
         margin: 0 5px;
-        border: none;
-        background: #4f46e5;
-        color: white;
+        border: 1px solid var(--border-color);
+        background: var(--btn-bg);
+        color: var(--text-primary);
         border-radius: 6px;
         cursor: pointer;
         font-size: 0.9rem;
@@ -152,30 +219,48 @@
     }
 
     .mass-adjustment button:hover {
-        background: #4338ca;
+        background: var(--btn-hover);
     }
 
     .recommendation-item {
         padding: 12px;
         margin-bottom: 10px;
-        background: #f0f9ff;
+        background: var(--card-bg);
         border-radius: 6px;
-        border-left: 4px solid #3b82f6;
+        border-left: 4px solid var(--accent-blue);
+        border: 1px solid var(--border-color);
+    }
+
+    .recommendation-item.attack {
+        border-left: 4px solid var(--accent-red);
+    }
+
+    .recommendation-item.defence {
+        border-left: 4px solid var(--accent-green);
+    }
+
+    .recommendation-item.possession {
+        border-left: 4px solid var(--accent-yellow);
+    }
+
+    .recommendation-item.physical {
+        border-left: 4px solid var(--accent-blue);
     }
 
     .recommendation-item p {
         margin: 5px 0;
+        color: var(--text-primary);
     }
 
     .recommendation-item strong {
-        color: #1e40af;
+        color: var(--text-primary);
     }
     
     .accept-btn, .accept-all-btn {
         padding: 6px 12px;
-        background: #10b981;
-        color: white;
-        border: none;
+        background: var(--accent-green);
+        color: var(--text-primary);
+        border: 1px solid var(--border-color);
         border-radius: 4px;
         cursor: pointer;
         font-size: 0.9rem;
@@ -187,7 +272,7 @@
     }
     
     .accept-all-btn {
-        background: #3b82f6;
+        background: var(--accent-blue);
         padding: 10px 20px;
         font-size: 1rem;
     }
@@ -199,9 +284,10 @@
     .btn {
         display: inline-block;
         padding: 10px 20px;
-        background: #3b82f6;
-        color: white;
+        background: var(--accent-blue);
+        color: var(--text-primary);
         text-decoration: none;
+        border: 1px solid var(--border-color);
         border-radius: 6px;
         font-weight: 500;
         margin-top: 15px;
@@ -213,12 +299,83 @@
 </style>
 
 <div class="container-flex">
-    <div class="col-skills">
-        <h1>{{ player.name }}</h1>
-        <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
-
-        <!-- Отображение слабых и перекачанных навыков -->
+    <div class="col-stats">
+        <h2>Общее</h2>
+        <div class="player-info">
+            <h1>{{ player.name }}</h1>
+            <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+        </div>
+        
+        <div class="stats-card">
+            <h3>Средние значения навыков</h3>
+            <div class="stat-item">
+                <span class="stat-label">Все навыки:</span>
+                <span class="stat-value" id="all-skills-avg">{{ "%.2f"|format((player.skills.values()|sum / player.skills|length) if player.skills else 0) }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Белые навыки:</span>
+                <span class="stat-value" id="white-skills-avg">
+                    {% if player.skills %}
+                        {% set white_skill_values = [] %}
+                        {% for skill_id in white_skills %}
+                            {% if skill_id in player.skills %}
+                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if white_skill_values %}
+                            {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
+                        {% else %}
+                            0.00
+                        {% endif %}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Серые навыки:</span>
+                <span class="stat-value" id="gray-skills-avg">
+                    {% if player.skills %}
+                        {% set gray_skill_values = [] %}
+                        {% for skill_id in skill_names.keys() %}
+                            {% if skill_id not in white_skills and skill_id in player.skills %}
+                                {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if gray_skill_values %}
+                            {{ "%.2f"|format(gray_skill_values|sum / gray_skill_values|length) }}
+                        {% else %}
+                            0.00
+                        {% endif %}
+                    {% else %}
+                        0.00
+                    {% endif %}
+                </span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Разница (сильнейший-слабейший):</span>
+                <span class="stat-value" id="white-skill-diff">
+                    {% if player.skills %}
+                        {% set white_skill_values = [] %}
+                        {% for skill_id in white_skills %}
+                            {% if skill_id in player.skills %}
+                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                            {% endif %}
+                        {% endfor %}
+                        {% if white_skill_values %}
+                            {{ (white_skill_values|max - white_skill_values|min) }}
+                        {% else %}
+                            0
+                        {% endif %}
+                    {% else %}
+                        0
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        
         <div class="highlights">
+            <h3>Слабые и сильные навыки</h3>
             <div class="highlight-item weak">
                 <strong>Слабые белые навыки:</strong>
                 {% if player.skills %}
@@ -252,7 +409,9 @@
                 {% endif %}
             </div>
         </div>
-
+    </div>
+    
+    <div class="col-skills">
         <h2>Навыки</h2>
 
         <div id="skills-form">
@@ -305,7 +464,7 @@
 
         <div style="margin-top: 20px;">
             <label for="training_count"><strong>Количество тренировок:</strong></label>
-            <input type="number" id="training_count" name="training_count" value="10" min="1" max="100" style="width: 80px; margin-left: 10px;">
+            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px;">
             <button type="button" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
         </div>
         
@@ -317,7 +476,7 @@
         {% if plan %}
         <div>
             {% for item in plan %}
-            <div class="recommendation-item">
+            <div class="recommendation-item {{ item.type }}">
                 <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
                 <p><em>Качает навыки:</em> 
                 {% if item.skills %}
@@ -379,6 +538,20 @@ function saveSkillAndRefreshPlan(skillId, value) {
             const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
             strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
         }
+        
+        // Обновляем средние значения навыков
+        if (data.all_skills_avg !== undefined) {
+            document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+        }
+        if (data.white_skills_avg !== undefined) {
+            document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+        }
+        if (data.gray_skills_avg !== undefined) {
+        if (data.white_skill_difference !== undefined) {
+            document.getElementById("white-skill-diff").textContent = data.white_skill_difference;
+        }
+            document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
+        }
     })
     .catch(error => console.error('Ошибка:', error));
 }
@@ -419,6 +592,17 @@ function refreshPlan() {
         if (strongestDiv) {
             const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
             strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
+        }
+        
+        // Обновляем средние значения навыков
+        if (data.all_skills_avg !== undefined) {
+            document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+        }
+        if (data.white_skills_avg !== undefined) {
+            document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+        }
+        if (data.gray_skills_avg !== undefined) {
+            document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
         }
     })
     .catch(error => console.error('Ошибка:', error));
@@ -479,11 +663,11 @@ function acceptTraining(trainingId, repeats) {
                                 const container = inputElement.closest('.skill-input');
                                 if (container) {
                                     // Add highlight effect
-                                    container.style.backgroundColor = '#FEF3C7'; // yellow highlight
+                                    container.style.backgroundColor = '#3B82F6'; // yellow highlight
                                     setTimeout(() => {
                                         // Smooth transition back to original color
-                                        container.style.transition = 'background-color 1s ease';
-                                        container.style.backgroundColor = '#f9fafc';
+                                        container.style.transition = 'none';
+                                        container.style.backgroundColor = '';
                                         
                                         // Also handle gray-skill styling if needed
                                         if (container.classList.contains('gray-skill')) {
@@ -495,7 +679,7 @@ function acceptTraining(trainingId, repeats) {
                                             if (container) {
                                                 container.style.transition = '';
                                             }
-                                        }, 1000);
+                                        }, 1500);
                                     }, 100); // Small delay to ensure highlight is visible
                                 }
                             }
@@ -507,7 +691,7 @@ function acceptTraining(trainingId, repeats) {
             // Refresh the page to show updated skills and plan after a short delay
             setTimeout(() => {
                 window.location.reload();
-            }, 1200); // Wait for the highlight animation before reload
+            }, 1600); // Wait for the highlight animation before reload
         } else {
             console.error('Error accepting training');
         }
@@ -557,11 +741,11 @@ function acceptAllTrainings() {
                             const container = inputElement.closest('.skill-input');
                             if (container) {
                                 // Add highlight effect
-                                container.style.backgroundColor = '#FEF3C7'; // yellow highlight
+                                container.style.backgroundColor = '#3B82F6'; // yellow highlight
                                 setTimeout(() => {
                                     // Smooth transition back to original color
-                                    container.style.transition = 'background-color 1s ease';
-                                    container.style.backgroundColor = '#f9fafc';
+                                    container.style.transition = 'none';
+                                    container.style.backgroundColor = '';
                                     
                                     // Also handle gray-skill styling if needed
                                     if (container.classList.contains('gray-skill')) {
@@ -573,7 +757,7 @@ function acceptAllTrainings() {
                                         if (container) {
                                             container.style.transition = '';
                                         }
-                                    }, 1000);
+                                    }, 1500);
                                 }, 100); // Small delay to ensure highlight is visible
                             }
                         }
@@ -584,7 +768,7 @@ function acceptAllTrainings() {
             // Refresh the page to show updated skills and plan after a short delay
             setTimeout(() => {
                 window.location.reload();
-            }, 1200); // Wait for the highlight animation before reload
+            }, 1600); // Wait for the highlight animation before reload
         } else {
             console.error('Error accepting all trainings');
         }

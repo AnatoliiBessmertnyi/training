@@ -37,7 +37,6 @@ POSITIONS: dict[str, dict] = {
             "pace",
         ],
     },
-
     # Центральный защитник
     "DC": {
         "name": "Центральный защитник",
@@ -52,7 +51,6 @@ POSITIONS: dict[str, dict] = {
             "aggressiveness",
         ],
     },
-
     # Опорный полузащитник
     "DMC": {
         "name": "Опорный полузащитник",
@@ -69,7 +67,6 @@ POSITIONS: dict[str, dict] = {
             "creativity",
         ],
     },
-
     # Центральный полузащитник
     "MC": {
         "name": "Центральный полузащитник",
@@ -86,7 +83,6 @@ POSITIONS: dict[str, dict] = {
             "creativity",
         ],
     },
-
     # Фланговые полузащитники
     "ML": {
         "name": "Левый полузащитник",
@@ -112,7 +108,6 @@ POSITIONS: dict[str, dict] = {
             "creativity",
         ],
     },
-
     # Атакующие фланги
     "AML": {
         "name": "Левый атакующий полузащитник",
@@ -140,7 +135,6 @@ POSITIONS: dict[str, dict] = {
             "creativity",
         ],
     },
-
     # Атакующий центр
     "AMC": {
         "name": "Атакующий полузащитник",
@@ -155,7 +149,6 @@ POSITIONS: dict[str, dict] = {
             "creativity",
         ],
     },
-
     # Нападающий
     "ST": {
         "name": "Нападающий",
