@@ -276,13 +276,20 @@ class TrainingPlanner:
             for skill in training_gray_skills:
                 # Чем выше значение серого навыка, тем больше штраф
                 skill_level = skills[skill]
-                # Используем функцию сложности для серых навыков с учетом позиционного множителя
-                difficulty_factor = training_difficulty(
-                    skill_level,
-                    is_gray_skill=True,
-                )
-                # Увеличиваем штраф, особенно для низких серых навыков
-                base_penalty = difficulty_factor * 10  # базовый штраф
+                
+                # ВВОДИМ СТРОГИЙ ШТРАФ: если серый навык уже больше 20, применяем сильный штраф
+                if skill_level > 20:
+                    # Сильный штраф для серых навыков выше 20
+                    base_penalty = 1000 + (skill_level - 20) * 50  # очень высокий штраф
+                else:
+                    # Используем функцию сложности для серых навыков с учетом позиционного множителя
+                    difficulty_factor = training_difficulty(
+                        skill_level,
+                        is_gray_skill=True,
+                    )
+                    # Увеличиваем штраф, особенно для низких серых навыков
+                    base_penalty = difficulty_factor * 10  # базовый штраф
+                
                 # Для DC (и других центральных позиций) увеличиваем штраф за серые навыки
                 if "DC" in self.player.positions:
                     base_penalty *= 1.5  # дополнительный штраф для DC
