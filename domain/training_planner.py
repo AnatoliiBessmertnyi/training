@@ -19,7 +19,7 @@ def get_position_penalty_multiplier(positions: list[str]) -> float:
         "DMC": 2,
         "MC": 3,
         "AMC": 3,
-        "DC": 1,
+        "DC": 5,  # Increased penalty for DC to heavily restrict gray skill growth
     }  # Central positions often have many gray skills
     count_position = len(positions)
     if count_position == 1:
@@ -40,25 +40,25 @@ def training_difficulty(
     For gray skills: up to 20 it's still manageable, but after 20 very high penalty
     """
     if is_gray_skill:
-        # For gray skills, up to 20 it's still manageable, after 20 increasingly high penalty
+        # For gray skills, severely penalize even moderate levels to keep average under 20
         if skill_level <= 5:
-            base_penalty = 4  # Low penalty for very low gray skills
+            base_penalty = 10  # Much higher penalty for very low gray skills
         elif skill_level <= 10:
-            base_penalty = 5  # High penalty after 20
+            base_penalty = 15  # Very high penalty after 10
         elif skill_level <= 15:
-            base_penalty = 6  # High penalty after 20
+            base_penalty = 20  # Extremely high penalty after 15
         elif skill_level <= 20:
-            base_penalty = 7  # Very high penalty
+            base_penalty = 30  # Prohibitive penalty after 20
         elif skill_level <= 25:
-            base_penalty = 8  # Very high penalty
+            base_penalty = 40  # Prohibitive penalty
         elif skill_level <= 30:
-            base_penalty = 9  # Very high penalty
+            base_penalty = 50  # Prohibitive penalty
         elif skill_level <= 35:
-            base_penalty = 10  # Very high penalty
+            base_penalty = 60  # Prohibitive penalty
         elif skill_level <= 40:
-            base_penalty = 11  # Very high penalty
+            base_penalty = 70  # Prohibitive penalty
         else:
-            base_penalty = 12  # Maximum penalty for high gray skills
+            base_penalty = 80  # Maximum penalty for high gray skills
 
         return base_penalty * position_penalty_multiplier
     else:
@@ -216,7 +216,7 @@ class TrainingPlanner:
                 base_penalty = difficulty_factor * 10  # базовый штраф
                 # Для DC (и других центральных позиций) увеличиваем штраф за серые навыки
                 if "DC" in self.player.positions:
-                    base_penalty *= 1.5  # дополнительный штраф для DC
+                    base_penalty *= 3.0  # гораздо более серьезный штраф для DC
                 gray_penalty += base_penalty
 
             # Премия за покрытие отстающих навыков - с учетом степени отставания
@@ -283,6 +283,17 @@ class TrainingPlanner:
                 new_white_values
             )
 
+            # Проверим общий средний уровень навыков (все навыки)
+            all_current_values = list(skills.values())
+            current_global_avg = sum(all_current_values) / len(all_current_values)
+            
+            # Если текущий глобальный средний уровень близок к 200, добавим штраф
+            global_cap_penalty = 0
+            if current_global_avg > 150:  # Начинаем штрафовать когда средний уровень превышает 150
+                excess_ratio = (current_global_avg - 150) / 50  # От 0 до 1 при достижении 200
+                # Увеличиваем штраф по мере приближения к 200
+                global_cap_penalty = gray_penalty * excess_ratio * 2.0  # Умножаем на существующий gray_penalty
+
             # Если новая дисперсия будет меньше текущей, добавляем премию
             if new_variance < variance:
                 variance_reduction_bonus = (
@@ -295,6 +306,7 @@ class TrainingPlanner:
                     + variance_reduction_bonus
                     - gray_penalty
                     - repetition_penalty
+                    - global_cap_penalty  # добавляем глобальный штраф
                 )
             else:
                 # Если дисперсия увеличивается, применяем штраф
@@ -308,6 +320,7 @@ class TrainingPlanner:
                     - gray_penalty
                     - repetition_penalty
                     - variance_increase_penalty
+                    - global_cap_penalty  # добавляем глобальный штраф
                 )
 
             if score > best_score:

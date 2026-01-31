@@ -112,23 +112,23 @@
         "DC"
       ],
       "skills": {
-        "tackling": 1,
-        "marking": 1,
-        "positioning": 1,
-        "heading": 1,
-        "bravery": 1,
+        "tackling": 121,
+        "marking": 131,
+        "positioning": 131,
+        "heading": 71,
+        "bravery": 121,
         "passing": 1,
         "dribbling": 1,
         "cross": 1,
         "shooting": 1,
         "finishing": 1,
-        "physical": 1,
-        "strength": 1,
-        "aggressiveness": 1,
+        "physical": 171,
+        "strength": 101,
+        "aggressiveness": 191,
         "pace": 1,
         "creativity": 1
       },
-      "training_count": 30
+      "training_count": 0
     }
   ]
 }
