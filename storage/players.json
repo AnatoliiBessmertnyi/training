@@ -9,23 +9,23 @@
         "AMC"
       ],
       "skills": {
-        "tackling": 87,
-        "marking": 88,
-        "positioning": 91,
-        "heading": 97,
-        "bravery": 93,
-        "passing": 101,
-        "dribbling": 85,
-        "cross": 50,
-        "finishing": 98,
-        "shooting": 85,
-        "physical": 92,
-        "strength": 89,
-        "aggressiveness": 90,
-        "pace": 96,
-        "creativity": 94
+        "tackling": 95,
+        "marking": 94,
+        "positioning": 99,
+        "heading": 103,
+        "bravery": 101,
+        "passing": 107,
+        "dribbling": 94,
+        "cross": 51,
+        "shooting": 93,
+        "finishing": 104,
+        "physical": 99,
+        "strength": 97,
+        "aggressiveness": 97,
+        "pace": 102,
+        "creativity": 100
       },
-      "training_count": 10
+      "training_count": 15
     },
     {
       "id": "a4daad44-f18a-4121-bfda-a3ed61af7fab",
@@ -36,22 +36,22 @@
       ],
       "skills": {
         "tackling": 16,
-        "marking": 25,
-        "positioning": 202,
-        "heading": 202,
-        "bravery": 13,
-        "passing": 237,
-        "dribbling": 242,
-        "cross": 22,
-        "shooting": 257,
+        "marking": 26,
+        "positioning": 213,
+        "heading": 214,
+        "bravery": 16,
+        "passing": 244,
+        "dribbling": 246,
+        "cross": 23,
+        "shooting": 258,
         "finishing": 280,
-        "physical": 186,
-        "strength": 183,
+        "physical": 201,
+        "strength": 197,
         "aggressiveness": 1,
-        "pace": 240,
-        "creativity": 187
+        "pace": 245,
+        "creativity": 201
       },
-      "training_count": 10
+      "training_count": 15
     },
     {
       "id": "5b364ad6-cbcf-412f-ac36-ab89bb44f186",
@@ -79,6 +79,31 @@
         "creativity": 94
       },
       "training_count": 10
+    },
+    {
+      "id": "d4891646-4a95-4d56-9004-4d3323d5fd0d",
+      "name": "Smith",
+      "positions": [
+        "DC"
+      ],
+      "skills": {
+        "tackling": 286,
+        "marking": 295,
+        "positioning": 281,
+        "heading": 256,
+        "bravery": 296,
+        "passing": 47,
+        "dribbling": 36,
+        "cross": 27,
+        "shooting": 33,
+        "finishing": 26,
+        "physical": 316,
+        "strength": 258,
+        "aggressiveness": 288,
+        "pace": 21,
+        "creativity": 19
+      },
+      "training_count": 30
     }
   ]
 }

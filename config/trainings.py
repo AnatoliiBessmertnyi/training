@@ -46,7 +46,6 @@ TRAININGS: dict[str, dict] = {
         "type": "attack",
         "skills": ["passing", "finishing", "cross", "creativity"],
     },
-
     # ------------------ Защитные ------------------
     "video_analysis": {
         "name": "Видеоанализ",
@@ -78,7 +77,6 @@ TRAININGS: dict[str, dict] = {
         "type": "defence",
         "skills": ["aggressiveness", "bravery", "tackling", "marking", "positioning"],
     },
-
     # ------------------ Владение ------------------
     "ball_control": {
         "name": "Контроль мяча",
@@ -115,7 +113,6 @@ TRAININGS: dict[str, dict] = {
         "type": "possession",
         "skills": ["passing", "finishing", "positioning", "creativity"],
     },
-
     # ------------------ Психофизика ------------------
     "warmup": {
         "name": "Разминка",

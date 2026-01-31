@@ -2,7 +2,7 @@ from typing import List, Tuple
 
 from config.trainings import TRAININGS
 from domain.player import Player
-from domain.training_planner import TrainingPlanner, training_difficulty
+from domain.training_planner import TrainingPlanner
 
 
 class TrainingRecommender:
@@ -17,7 +17,7 @@ class TrainingRecommender:
 
         Args:
             total_sessions: Number of training sessions to plan
- 
+
         Returns:
             A list of training recommendations
         """

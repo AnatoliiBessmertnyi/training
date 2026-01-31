@@ -15,14 +15,12 @@ SKILLS: dict[str, str] = {
     "positioning": "Выбор позиции",
     "heading": "Удар головой",
     "bravery": "Храбрость",
-
     # Нападение
     "passing": "Передача",
     "dribbling": "Дриблинг",
     "cross": "Навес",
     "shooting": "Удары",
     "finishing": "Завершение",
-
     # Психофизика
     "physical": "Физическая форма",
     "strength": "Сила",
@@ -30,5 +28,3 @@ SKILLS: dict[str, str] = {
     "pace": "Скорость",
     "creativity": "Креативность",
 }
-
-TOTAL_SKILLS_COUNT = 15
