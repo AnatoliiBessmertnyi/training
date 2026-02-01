@@ -23,6 +23,41 @@
         overflow-x: auto; /* Allow horizontal scrolling for the entire page if needed */
     }
 
+    .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        background: var(--bg-secondary);
+        padding: 10px 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .header-title {
+        margin: 0;
+        font-size: 1.2em;
+        color: var(--text-primary);
+    }
+    
+    .header-home-link {
+        display: inline-block;
+        padding: 6px 12px;
+        background: var(--accent-blue);
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 4px;
+        border: 1px solid var(--border-color);
+        font-weight: 500;
+    }
+    
+    .header-home-link:hover {
+        background: #2563eb;
+    }
+
     .container-flex {
         display: flex;
         gap: 1.5rem;
@@ -37,6 +72,7 @@
         overflow-y: hidden;
         min-height: 80vh;
         padding: 20px;
+        margin-top: 60px; /* Add space for fixed header */
     }
 
     .col-stats, .col-skills, .col-plan {
@@ -79,6 +115,32 @@
         margin: 0.5rem 0;
         padding: 0.5rem 0;
         border-bottom: 1px solid var(--border-color);
+    }
+    
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 10px 0;
+    }
+    
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+    }
+    
+    th {
+        color: var(--text-secondary);
+        font-weight: 600;
+        background-color: var(--bg-tertiary);
+    }
+    
+    tbody tr:last-child td {
+        border-bottom: none;
+    }
+    
+    tbody tr:nth-child(even) {
+        background-color: #2a2a2a;
     }
 
     .stat-label {
@@ -163,6 +225,16 @@
     .skill-input input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none;
         margin: 0;
+    }
+    
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    
+    input[type="number"] {
+        -moz-appearance: textfield;
     }
 
     .adjustment-buttons {
@@ -298,80 +370,108 @@
     }
 </style>
 
+<div class="header">
+    <h1 class="header-title">{{ player.name }} - Детали</h1>
+    <a href="{{ url_for('index') }}" class="header-home-link">На главную</a>
+</div>
+
 <div class="container-flex">
     <div class="col-stats">
         <h2>Общее</h2>
         <div class="player-info">
-            <h1>{{ player.name }}</h1>
-            <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+            <h1>
+                <input type="text" id="player-name" value="{{ player.name }}" style="width: auto; display: inline; border: none; background: transparent; color: inherit; font-size: 2em; font-weight: bold;" onchange="updateNameAndPosition()">
+            </h1>
+            <p><strong>Позиции:</strong>
+                <select id="position-select" multiple size="3" onchange="updateNameAndPosition()" style="width: 100%;">
+                    {% for position in positions %}
+                        <option value="{{ position }}" {% if position in player.positions %}selected{% endif %}>{{ position }}</option>
+                    {% endfor %}
+                </select>
+            </p>
         </div>
         
         <div class="stats-card">
             <h3>Средние значения навыков</h3>
-            <div class="stat-item">
-                <span class="stat-label">Все навыки:</span>
-                <span class="stat-value" id="all-skills-avg">{{ "%.2f"|format((player.skills.values()|sum / player.skills|length) if player.skills else 0) }}</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Белые навыки:</span>
-                <span class="stat-value" id="white-skills-avg">
-                    {% if player.skills %}
-                        {% set white_skill_values = [] %}
-                        {% for skill_id in white_skills %}
-                            {% if skill_id in player.skills %}
-                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if white_skill_values %}
-                            {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
-                        {% else %}
-                            0.00
+            <table style="width: 100%;">
+    <thead>
+        <tr>
+            <th style="text-align: left; width: 60%;">Статистика</th>
+            <th style="text-align: right; width: 20%;">Текущее значение</th>
+            <th style="text-align: right; width: 20%;">После тренировок</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td class="stat-label">Все навыки:</td>
+            <td class="stat-value" id="all-skills-avg" style="text-align: right;">{{ "%.2f"|format((player.skills.values()|sum / player.skills|length) if player.skills else 0) }}</td>
+            <td class="stat-value" id="all-skills-avg-after" style="text-align: right;">--</td>
+        </tr>
+        <tr>
+            <td class="stat-label">Белые навыки:</td>
+            <td class="stat-value" id="white-skills-avg" style="text-align: right;">
+                {% if player.skills %}
+                    {% set white_skill_values = [] %}
+                    {% for skill_id in white_skills %}
+                        {% if skill_id in player.skills %}
+                            {% set _ = white_skill_values.append(player.skills[skill_id]) %}
                         {% endif %}
+                    {% endfor %}
+                    {% if white_skill_values %}
+                        {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
                     {% else %}
                         0.00
                     {% endif %}
-                </span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Серые навыки:</span>
-                <span class="stat-value" id="gray-skills-avg">
-                    {% if player.skills %}
-                        {% set gray_skill_values = [] %}
-                        {% for skill_id in skill_names.keys() %}
-                            {% if skill_id not in white_skills and skill_id in player.skills %}
-                                {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if gray_skill_values %}
-                            {{ "%.2f"|format(gray_skill_values|sum / gray_skill_values|length) }}
-                        {% else %}
-                            0.00
+                {% else %}
+                    0.00
+                {% endif %}
+            </td>
+            <td class="stat-value" id="white-skills-avg-after" style="text-align: right;">--</td>
+        </tr>
+        <tr>
+            <td class="stat-label">Серые навыки:</td>
+            <td class="stat-value" id="gray-skills-avg" style="text-align: right;">
+                {% if player.skills %}
+                    {% set gray_skill_values = [] %}
+                    {% for skill_id in skill_names.keys() %}
+                        {% if skill_id not in white_skills and skill_id in player.skills %}
+                            {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
                         {% endif %}
+                    {% endfor %}
+                    {% if gray_skill_values %}
+                        {{ "%.2f"|format(gray_skill_values|sum / gray_skill_values|length) }}
                     {% else %}
                         0.00
                     {% endif %}
-                </span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-label">Разница (сильнейший-слабейший):</span>
-                <span class="stat-value" id="white-skill-diff">
-                    {% if player.skills %}
-                        {% set white_skill_values = [] %}
-                        {% for skill_id in white_skills %}
-                            {% if skill_id in player.skills %}
-                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if white_skill_values %}
-                            {{ (white_skill_values|max - white_skill_values|min) }}
-                        {% else %}
-                            0
+                {% else %}
+                    0.00
+                {% endif %}
+            </td>
+            <td class="stat-value" id="gray-skills-avg-after" style="text-align: right;">--</td>
+        </tr>
+        <tr>
+            <td class="stat-label">Разница (сильнейший-слабейший):</td>
+            <td class="stat-value" id="white-skill-diff" style="text-align: right;">
+                {% if player.skills %}
+                    {% set white_skill_values = [] %}
+                    {% for skill_id in white_skills %}
+                        {% if skill_id in player.skills %}
+                            {% set _ = white_skill_values.append(player.skills[skill_id]) %}
                         {% endif %}
+                    {% endfor %}
+                    {% if white_skill_values %}
+                        {{ (white_skill_values|max - white_skill_values|min) }}
                     {% else %}
                         0
                     {% endif %}
-                </span>
-            </div>
+                {% else %}
+                    0
+                {% endif %}
+            </td>
+            <td class="stat-value" id="white-skill-diff-after" style="text-align: right;">--</td>
+        </tr>
+    </tbody>
+</table>
         </div>
         
         <div class="highlights">
@@ -464,15 +564,14 @@
 
         <div style="margin-top: 20px;">
             <label for="training_count"><strong>Количество тренировок:</strong></label>
-            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px;">
-            <button type="button" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
+            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px; -moz-appearance: textfield; appearance: none; -webkit-appearance: none;" onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 46;" oninput="this.style.outline = 'none';">
+            <button type="button" class="btn" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
         </div>
-        
-        <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
     </div>
 
     <div class="col-plan" id="plan-container">
         <h2>План тренировок</h2>
+        <button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
         {% if plan %}
         <div>
             {% for item in plan %}
@@ -491,7 +590,6 @@
             </div>
             {% endfor %}
         </div>
-        <button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
         {% else %}
         <p>Нет подходящих тренировок для балансировки навыков.</p>
         {% endif %}
@@ -500,6 +598,47 @@
 
 <script>
 let timeout;
+
+function updateNameAndPosition() {
+    const nameInput = document.getElementById('player-name');
+    const positionSelect = document.getElementById('position-select');
+    const name = nameInput.value;
+    const selectedPositions = Array.from(positionSelect.selectedOptions).map(option => option.value);
+    
+    fetch('/players/{{ player_id }}/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `action=update_name_position&name=${encodeURIComponent(name)}&${selectedPositions.map(pos => 'positions=' + encodeURIComponent(pos)).join('&')}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the header title
+            document.querySelector('.header-title').textContent = data.name + ' - Детали';
+            
+            // Update stats after position change affects white skills
+            if (data.all_skills_avg !== undefined) {
+                document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+                document.getElementById('all-skills-avg-after').textContent = data.all_skills_avg_after.toFixed(2);
+            }
+            if (data.white_skills_avg !== undefined) {
+                document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+                document.getElementById('white-skills-avg-after').textContent = data.white_skills_avg_after.toFixed(2);
+            }
+            if (data.gray_skills_avg !== undefined) {
+                document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
+                document.getElementById('gray-skills-avg-after').textContent = data.gray_skills_avg_after.toFixed(2);
+            }
+            if (data.white_skill_difference !== undefined) {
+                document.getElementById('white-skill-diff').textContent = data.white_skill_difference;
+                document.getElementById('white-skill-diff-after').textContent = data.white_skill_difference_after;
+            }
+        }
+    })
+    .catch(error => console.error('Ошибка обновления имени или позиции:', error));
+}
 
 function changeSkillValue(skillId, delta) {
     const input = document.getElementById(skillId);
@@ -542,15 +681,19 @@ function saveSkillAndRefreshPlan(skillId, value) {
         // Обновляем средние значения навыков
         if (data.all_skills_avg !== undefined) {
             document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+            document.getElementById('all-skills-avg-after').textContent = data.all_skills_avg_after.toFixed(2);
         }
         if (data.white_skills_avg !== undefined) {
             document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+            document.getElementById('white-skills-avg-after').textContent = data.white_skills_avg_after.toFixed(2);
         }
         if (data.gray_skills_avg !== undefined) {
-        if (data.white_skill_difference !== undefined) {
-            document.getElementById("white-skill-diff").textContent = data.white_skill_difference;
-        }
             document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
+            document.getElementById('gray-skills-avg-after').textContent = data.gray_skills_avg_after.toFixed(2);
+        }
+        if (data.white_skill_difference !== undefined) {
+            document.getElementById('white-skill-diff').textContent = data.white_skill_difference;
+            document.getElementById('white-skill-diff-after').textContent = data.white_skill_difference_after;
         }
     })
     .catch(error => console.error('Ошибка:', error));
@@ -597,12 +740,19 @@ function refreshPlan() {
         // Обновляем средние значения навыков
         if (data.all_skills_avg !== undefined) {
             document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+            document.getElementById('all-skills-avg-after').textContent = data.all_skills_avg_after.toFixed(2);
         }
         if (data.white_skills_avg !== undefined) {
             document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+            document.getElementById('white-skills-avg-after').textContent = data.white_skills_avg_after.toFixed(2);
         }
         if (data.gray_skills_avg !== undefined) {
             document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
+            document.getElementById('gray-skills-avg-after').textContent = data.gray_skills_avg_after.toFixed(2);
+        }
+        if (data.white_skill_difference !== undefined) {
+            document.getElementById('white-skill-diff').textContent = data.white_skill_difference;
+            document.getElementById('white-skill-diff-after').textContent = data.white_skill_difference_after;
         }
     })
     .catch(error => console.error('Ошибка:', error));

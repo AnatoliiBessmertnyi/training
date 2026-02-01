@@ -232,6 +232,72 @@ def accept_all_trainings(player_id):
     return redirect(url_for("player_detail", player_id=player_id))
 
 
+def calculate_stats_after_trainings(player_obj, training_count):
+    """Calculate statistics after applying all recommended trainings"""
+    # Create a copy of the player to simulate training application
+    simulated_player = Player(
+        name=player_obj.name,
+        positions=player_obj.positions,
+        skills={k: v for k, v in player_obj.skills.items()}  # Copy skills
+    )
+    
+    # Get the recommendations
+    recommender = TrainingRecommender(simulated_player)
+    plan = recommender.build_balanced_plan(total_sessions=training_count)
+    
+    # Apply all trainings in the plan
+    from config.trainings import TRAININGS
+    for item in plan:
+        training_data = TRAININGS[item.training_id]
+        # Apply the training multiple times based on repeats
+        for _ in range(item.repeats):
+            simulated_player.apply_training(training_data["skills"], gain=1)
+    
+    # Calculate stats for the simulated player after trainings
+    white_skills = set()
+    for pos in simulated_player.positions:
+        white_skills.update(POSITIONS[pos]["white_skills"])
+    
+    # Calculate averages for all skills, white skills, and gray skills
+    all_skills_values = list(simulated_player.skills.values())
+    all_skills_avg = (
+        sum(all_skills_values) / len(all_skills_values) if all_skills_values else 0
+    )
+
+    white_skills_values = [
+        simulated_player.skills[skill_id]
+        for skill_id in white_skills
+        if skill_id in simulated_player.skills
+    ]
+    white_skills_avg = (
+        sum(white_skills_values) / len(white_skills_values)
+        if white_skills_values
+        else 0
+    )
+
+    gray_skills = set(SKILLS.keys()) - white_skills
+    gray_skills_values = [
+        simulated_player.skills[skill_id]
+        for skill_id in gray_skills
+        if skill_id in simulated_player.skills
+    ]
+    gray_skills_avg = (
+        sum(gray_skills_values) / len(gray_skills_values) if gray_skills_values else 0
+    )
+
+    # Calculate the difference between strongest and weakest white skills
+    if white_skills_values:
+        white_skill_difference = max(white_skills_values) - min(white_skills_values)
+    else:
+        white_skill_difference = 0
+    
+    return {
+        "all_skills_avg_after": round(all_skills_avg, 2),
+        "white_skills_avg_after": round(white_skills_avg, 2),
+        "gray_skills_avg_after": round(gray_skills_avg, 2),
+        "white_skill_difference_after": white_skill_difference
+    }
+
 # 🆕 Новый маршрут для обновления плана и слабых/сильных навыков через JSON
 @app.route("/players/<player_id>/update", methods=["POST"])
 def update_skills_and_get_data(player_id):
@@ -240,6 +306,89 @@ def update_skills_and_get_data(player_id):
     # Check if player exists
     if player_data is None:
         return "Player not found", 404
+
+    # Check if updating name or positions
+    action = request.form.get("action", "")
+    
+    if action == "update_name_position":
+        # Update name
+        new_name = request.form.get("name")
+        if new_name:
+            player_data["name"] = new_name
+            
+        # Update positions
+        new_positions = request.form.getlist("positions")
+        if new_positions:
+            player_data["positions"] = new_positions
+        else:
+            player_data["positions"] = []
+        
+        repo.update(player_data)
+        
+        # Calculate white skills after position change
+        white_skills = set()
+        if player_data["positions"]:
+            for pos in player_data["positions"]:
+                white_skills.update(POSITIONS[pos]["white_skills"])
+
+        # Calculate averages for all skills, white skills, and gray skills
+        all_skills_values = list(player_data["skills"].values())
+        all_skills_avg = (
+            sum(all_skills_values) / len(all_skills_values) if all_skills_values else 0
+        )
+
+        white_skills_values = [
+            player_data["skills"][skill_id]
+            for skill_id in white_skills
+            if skill_id in player_data["skills"]
+        ]
+        white_skills_avg = (
+            sum(white_skills_values) / len(white_skills_values)
+            if white_skills_values
+            else 0
+        )
+
+        gray_skills = set(SKILLS.keys()) - white_skills
+        gray_skills_values = [
+            player_data["skills"][skill_id]
+            for skill_id in gray_skills
+            if skill_id in player_data["skills"]
+        ]
+        gray_skills_avg = (
+            sum(gray_skills_values) / len(gray_skills_values) if gray_skills_values else 0
+        )
+
+        # Calculate the difference between strongest and weakest white skills
+        white_skills_values = [
+            player_data["skills"][skill_id]
+            for skill_id in white_skills
+            if skill_id in player_data["skills"]
+        ]
+        white_skill_difference = (
+            max(white_skills_values) - min(white_skills_values)
+            if white_skills_values
+            else 0
+        )
+
+        # Calculate stats after applying all trainings
+        skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+        player_obj = Player(
+            name=player_data["name"],
+            positions=player_data["positions"] if player_data["positions"] else [],
+            skills=skills,
+        )
+        stats_after = calculate_stats_after_trainings(player_obj, player_data.get("training_count", 10))
+
+        return jsonify({
+            "success": True,
+            "name": player_data["name"],
+            "positions": player_data["positions"],
+            "all_skills_avg": round(all_skills_avg, 2),
+            "white_skills_avg": round(white_skills_avg, 2),
+            "gray_skills_avg": round(gray_skills_avg, 2),
+            "white_skill_difference": white_skill_difference,
+            **stats_after  # Add the "after training" stats
+        })
 
     # Обновляем навыки
     for skill in SKILLS.keys():
@@ -343,6 +492,9 @@ def update_skills_and_get_data(player_id):
         if white_skills_values
         else 0
     )
+    
+    # Calculate stats after applying all trainings
+    stats_after = calculate_stats_after_trainings(player_obj, training_count)
 
     # Возвращаем JSON
     return jsonify(
@@ -356,6 +508,7 @@ def update_skills_and_get_data(player_id):
             "white_skills_avg": round(white_skills_avg, 2),
             "gray_skills_avg": round(gray_skills_avg, 2),
             "white_skill_difference": white_skill_difference,
+            **stats_after  # Add the "after training" stats
         }
     )
 
