@@ -37,19 +37,19 @@
       "skills": {
         "tackling": 16,
         "marking": 26,
-        "positioning": 213,
-        "heading": 214,
-        "bravery": 16,
+        "positioning": 203,
+        "heading": 204,
+        "bravery": 14,
         "passing": 244,
-        "dribbling": 246,
+        "dribbling": 244,
         "cross": 23,
-        "shooting": 258,
-        "finishing": 280,
-        "physical": 201,
-        "strength": 197,
+        "shooting": 259,
+        "finishing": 281,
+        "physical": 190,
+        "strength": 183,
         "aggressiveness": 1,
-        "pace": 245,
-        "creativity": 201
+        "pace": 244,
+        "creativity": 187
       },
       "training_count": 15
     },
@@ -129,6 +129,56 @@
         "creativity": 1
       },
       "training_count": 30
+    },
+    {
+      "id": "8b73ec74-fdab-4e6d-803d-ff2e6b474e39",
+      "name": "Dudi Shitrit",
+      "positions": [
+        "MC"
+      ],
+      "skills": {
+        "tackling": 174,
+        "marking": 174,
+        "positioning": 177,
+        "heading": 32,
+        "bravery": 184,
+        "passing": 184,
+        "dribbling": 156,
+        "cross": 15,
+        "shooting": 171,
+        "finishing": 16,
+        "physical": 154,
+        "strength": 7,
+        "aggressiveness": 23,
+        "pace": 221,
+        "creativity": 117
+      },
+      "training_count": 15
+    },
+    {
+      "id": "d55fed36-db09-4e48-a9e9-523d70f612a5",
+      "name": "Aleksandr Streltsov",
+      "positions": [
+        "MC"
+      ],
+      "skills": {
+        "tackling": 117,
+        "marking": 126,
+        "positioning": 235,
+        "heading": 3,
+        "bravery": 249,
+        "passing": 231,
+        "dribbling": 233,
+        "cross": 8,
+        "shooting": 187,
+        "finishing": 1,
+        "physical": 179,
+        "strength": 1,
+        "aggressiveness": 1,
+        "pace": 247,
+        "creativity": 175
+      },
+      "training_count": 15
     }
   ]
 }
