@@ -307,8 +307,27 @@
     <div class="col-stats">
         <h2>Общее</h2>
         <div class="player-info">
-            <h1>{{ player.name }}</h1>
-            <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
+            <form id="player-info-form" method="post" action="{{ url_for('player_detail', player_id=player.id) }}">
+                <h1>
+                    <input type="text" id="player-name" name="name" value="{{ player.name }}" 
+                           style="width: 100%; font-size: 2em; font-weight: bold; background: transparent; border: none; color: var(--text-primary);" />
+                </h1>
+                <div style="margin-top: 10px;">
+                    <strong>Позиции:</strong><br>
+                    <div id="positions-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">
+                        {% for pos_id, pos_data in positions.items() %}
+                            <label style="display: flex; align-items: center; cursor: pointer;">
+                                <input type="checkbox" name="positions" value="{{ pos_id }}" 
+                                       {% if pos_id in player.positions %}checked{% endif %}
+                                       onchange="limitPositions(this)" 
+                                       style="margin-right: 5px;" />
+                                {{ pos_data.name }}
+                            </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                <button type="submit" style="margin-top: 15px; padding: 8px 16px; background: var(--accent-blue); color: white; border: none; border-radius: 4px; cursor: pointer;">Сохранить изменения</button>
+            </form>
         </div>
         
         <div class="stats-card">
@@ -705,6 +724,16 @@ function acceptTraining(trainingId, repeats) {
 }
 
 // Function to accept all trainings
+function limitPositions(checkbox) {
+    const checkboxes = document.querySelectorAll('input[name="positions"]');
+    const checkedBoxes = Array.from(checkboxes).filter(cb => cb.checked);
+    
+    if (checkedBoxes.length > 3) {
+        checkbox.checked = false;
+        alert('Можно выбрать не более 3 позиций для одного игрока');
+    }
+}
+
 function acceptAllTrainings() {
     // Get all training elements to find affected skills
     const allTrainingElements = document.querySelectorAll('.recommendation-item');

@@ -45,6 +45,18 @@ def player_detail(player_id):
             white_skills.update(POSITIONS[pos]["white_skills"])
 
     if request.method == "POST":
+        # Handle name update
+        name = request.form.get("name")
+        if name:
+            player_data["name"] = name
+            
+        # Handle positions update
+        positions = request.form.getlist("positions")
+        # Limit to 3 positions maximum
+        if len(positions) > 3:
+            positions = positions[:3]
+        player_data["positions"] = positions
+
         # Handle skill updates
         for skill in SKILLS.keys():
             val = request.form.get(f"{skill}")
@@ -111,6 +123,7 @@ def player_detail(player_id):
             player_id=player_id,
             white_skills=white_skills,
             skill_names=SKILLS,
+            positions=POSITIONS,
             plan=plan_to_render,
         )
 
@@ -146,6 +159,7 @@ def player_detail(player_id):
         player_id=player_id,
         white_skills=white_skills,
         skill_names=SKILLS,
+        positions=POSITIONS,
         plan=plan_with_types,
     )
 
@@ -240,6 +254,18 @@ def update_skills_and_get_data(player_id):
     # Check if player exists
     if player_data is None:
         return "Player not found", 404
+
+    # Handle name update
+    name = request.form.get("name")
+    if name:
+        player_data["name"] = name
+        
+    # Handle positions update
+    positions = request.form.getlist("positions")
+    # Limit to 3 positions maximum
+    if len(positions) > 3:
+        positions = positions[:3]
+    player_data["positions"] = positions
 
     # Обновляем навыки
     for skill in SKILLS.keys():
