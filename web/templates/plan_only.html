@@ -1,4 +1,5 @@
 {% if plan %}
+<button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
 <div>
     {% for item in plan %}
     <div class="recommendation-item {{ item.type }}">
@@ -16,7 +17,6 @@
     </div>
     {% endfor %}
 </div>
-<button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
 {% else %}
 <p>Нет подходящих тренировок для балансировки навыков.</p>
 {% endif %}

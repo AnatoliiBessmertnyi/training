@@ -129,6 +129,31 @@
         "creativity": 1
       },
       "training_count": 30
+    },
+    {
+      "id": "8b73ec74-fdab-4e6d-803d-ff2e6b474e39",
+      "name": "Dudi Shitrit",
+      "positions": [
+        "MC"
+      ],
+      "skills": {
+        "tackling": 174,
+        "marking": 174,
+        "positioning": 177,
+        "heading": 32,
+        "bravery": 184,
+        "passing": 184,
+        "dribbling": 156,
+        "cross": 15,
+        "shooting": 171,
+        "finishing": 16,
+        "physical": 154,
+        "strength": 7,
+        "aggressiveness": 23,
+        "pace": 221,
+        "creativity": 117
+      },
+      "training_count": 15
     }
   ]
 }

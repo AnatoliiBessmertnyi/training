@@ -164,6 +164,11 @@
         -webkit-appearance: none;
         margin: 0;
     }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 
     .adjustment-buttons {
         display: flex;
@@ -464,8 +469,8 @@
 
         <div style="margin-top: 20px;">
             <label for="training_count"><strong>Количество тренировок:</strong></label>
-            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px;">
-            <button type="button" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
+            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px; -moz-appearance: textfield; appearance: none; -webkit-appearance: none;" onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 46;" oninput="this.style.outline = 'none';">
+            <button type="button" class="btn" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
         </div>
         
         <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
@@ -474,6 +479,7 @@
     <div class="col-plan" id="plan-container">
         <h2>План тренировок</h2>
         {% if plan %}
+        <button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
         <div>
             {% for item in plan %}
             <div class="recommendation-item {{ item.type }}">
@@ -491,7 +497,6 @@
             </div>
             {% endfor %}
         </div>
-        <button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
         {% else %}
         <p>Нет подходящих тренировок для балансировки навыков.</p>
         {% endif %}
