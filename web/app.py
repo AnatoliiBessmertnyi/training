@@ -17,7 +17,39 @@ def index():
 
 @app.route("/players")
 def players():
-    return render_template("players.html", players=repo.load_all())
+    players_data = repo.load_all()
+    
+    # Для каждого игрока вычисляем статистику
+    for player in players_data:
+        skills = player.get("skills", {})
+        
+        # Среднее всех навыков
+        if skills:
+            all_values = list(skills.values())
+            player["all_skills_avg"] = sum(all_values) / len(all_values)
+        else:
+            player["all_skills_avg"] = 0
+        
+        # Белые навыки и их среднее
+        white_skills = set()
+        if player.get("positions"):
+            for pos in player["positions"]:
+                if pos in POSITIONS:
+                    white_skills.update(POSITIONS[pos]["white_skills"])
+        
+        white_skill_values = []
+        for skill_id in white_skills:
+            if skill_id in skills:
+                white_skill_values.append(skills[skill_id])
+        
+        if white_skill_values:
+            player["white_skills_avg"] = sum(white_skill_values) / len(white_skill_values)
+            player["white_skill_diff"] = max(white_skill_values) - min(white_skill_values)
+        else:
+            player["white_skills_avg"] = 0
+            player["white_skill_diff"] = 0
+    
+    return render_template("players.html", players=players_data)
 
 
 @app.route("/players/new", methods=["GET", "POST"])
