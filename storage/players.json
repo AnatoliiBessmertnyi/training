@@ -110,23 +110,23 @@
         "MC"
       ],
       "skills": {
-        "tackling": 122,
-        "marking": 133,
-        "positioning": 238,
-        "heading": 6,
-        "bravery": 253,
-        "passing": 234,
-        "dribbling": 238,
-        "cross": 10,
-        "shooting": 192,
-        "finishing": 1,
-        "physical": 180,
-        "strength": 1,
-        "aggressiveness": 1,
+        "tackling": 128,
+        "marking": 139,
+        "positioning": 241,
+        "heading": 9,
+        "bravery": 256,
+        "passing": 236,
+        "dribbling": 241,
+        "cross": 13,
+        "shooting": 195,
+        "finishing": 2,
+        "physical": 183,
+        "strength": 4,
+        "aggressiveness": 4,
         "pace": 247,
         "creativity": 175
       },
-      "training_count": 15
+      "training_count": 10
     }
   ]
 }

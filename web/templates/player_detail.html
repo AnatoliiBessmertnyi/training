@@ -378,7 +378,28 @@
                 </span>
             </div>
         </div>
-        
+
+        <!-- Stats card for averages after accepting all trainings -->
+        <div class="stats-card" id="after-training-averages" style="display: none;">
+            <h3>Средние значения навыков после принятия всех тренировок</h3>
+            <div class="stat-item">
+                <span class="stat-label">Все навыки:</span>
+                <span class="stat-value" id="after-all-skills-avg">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Белые навыки:</span>
+                <span class="stat-value" id="after-white-skills-avg">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Серые навыки:</span>
+                <span class="stat-value" id="after-gray-skills-avg">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Разница (сильнейший-слабейший):</span>
+                <span class="stat-value" id="after-white-skill-diff">-</span>
+            </div>
+        </div>
+
         <div class="highlights">
             <h3>Слабые и сильные навыки</h3>
             <div class="highlight-item weak">
@@ -712,7 +733,6 @@ function acceptAllTrainings() {
     
     allTrainingElements.forEach(element => {
         const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
-        // Parse the skills list - looking for patterns like "skill1, skill2, skill3"
         const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
         let match;
         
@@ -723,7 +743,6 @@ function acceptAllTrainings() {
             }
         }
     });
-    
     fetch('/players/{{ player_id }}/accept_all_trainings', {
         method: 'POST',
         headers: {
