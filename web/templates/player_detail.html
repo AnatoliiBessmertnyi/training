@@ -379,6 +379,27 @@
             </div>
         </div>
         
+        <!-- Stats card for averages after accepting all trainings -->
+        <div class="stats-card" id="after-training-averages" style="display: none;">
+            <h3>Средние значения навыков после принятия всех тренировок</h3>
+            <div class="stat-item">
+                <span class="stat-label">Все навыки:</span>
+                <span class="stat-value" id="after-all-skills-avg">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Белые навыки:</span>
+                <span class="stat-value" id="after-white-skills-avg">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Серые навыки:</span>
+                <span class="stat-value" id="after-gray-skills-avg">-</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">Разница (сильнейший-слабейший):</span>
+                <span class="stat-value" id="after-white-skill-diff">-</span>
+            </div>
+        </div>
+        
         <div class="highlights">
             <h3>Слабые и сильные навыки</h3>
             <div class="highlight-item weak">
@@ -724,6 +745,72 @@ function acceptAllTrainings() {
         }
     });
     
+    // First, calculate the averages after accepting all trainings
+    // Get all training elements to simulate the skill changes
+    const allTrainingElements = document.querySelectorAll('.recommendation-item');
+    
+    // Create a copy of current skills to simulate updates
+    const simulatedSkills = {};
+    const whiteSkills = new Set({{ white_skills | tojson }});
+    const skillInputs = document.querySelectorAll('#skills-form input[type="number"]');
+    
+    skillInputs.forEach(input => {
+        const skillId = input.id;
+        const skillValue = parseFloat(input.value);
+        simulatedSkills[skillId] = skillValue;
+    });
+    
+    // Process each training and update simulated skills
+    allTrainingElements.forEach(element => {
+        const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
+        const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
+        let match;
+        
+        while ((match = skillPattern.exec(skillsText)) !== null) {
+            let skillName = match[1].trim();
+            if (skillName) {
+                // Find the corresponding skill ID from the labels
+                const allLabels = document.querySelectorAll('label');
+                allLabels.forEach(label => {
+                    if (label.textContent.trim().includes(skillName)) {
+                        const inputId = label.getAttribute('for');
+                        if (inputId && simulatedSkills.hasOwnProperty(inputId)) {
+                            // Simulate a skill increase - we'll increment by 1 for each training affecting the skill
+                            // In a real implementation, this would depend on training intensity
+                            simulatedSkills[inputId] = Math.min(simulatedSkills[inputId] + 1, 1000);
+                        }
+                    }
+                });
+            }
+        }
+    });
+    
+    // Calculate averages for simulated skills
+    const allValues = Object.values(simulatedSkills);
+    const allAvg = allValues.length > 0 ? (allValues.reduce((a, b) => a + b, 0) / allValues.length).toFixed(2) : '0.00';
+    
+    const whiteValues = Object.entries(simulatedSkills)
+        .filter(([id, value]) => whiteSkills.has(id))
+        .map(([id, value]) => value);
+    const whiteAvg = whiteValues.length > 0 ? (whiteValues.reduce((a, b) => a + b, 0) / whiteValues.length).toFixed(2) : '0.00';
+    
+    const grayValues = Object.entries(simulatedSkills)
+        .filter(([id, value]) => !whiteSkills.has(id))
+        .map(([id, value]) => value);
+    const grayAvg = grayValues.length > 0 ? (grayValues.reduce((a, b) => a + b, 0) / grayValues.length).toFixed(2) : '0.00';
+    
+    const whiteMaxMinDiff = whiteValues.length > 0 ? (Math.max(...whiteValues) - Math.min(...whiteValues)).toFixed(2) : '0.00';
+    
+    // Update the stats card with calculated averages
+    document.getElementById('after-all-skills-avg').textContent = allAvg;
+    document.getElementById('after-white-skills-avg').textContent = whiteAvg;
+    document.getElementById('after-gray-skills-avg').textContent = grayAvg;
+    document.getElementById('after-white-skill-diff').textContent = whiteMaxMinDiff;
+    
+    // Show the stats card
+    document.getElementById('after-training-averages').style.display = 'block';
+    
+    // Now perform the actual API call to accept all trainings
     fetch('/players/{{ player_id }}/accept_all_trainings', {
         method: 'POST',
         headers: {
@@ -746,7 +833,7 @@ function acceptAllTrainings() {
                             const container = inputElement.closest('.skill-input');
                             if (container) {
                                 // Add highlight effect
-                                container.style.backgroundColor = '#3B82F6'; // yellow highlight
+                                container.style.backgroundColor = '#3B82F6'; // blue highlight
                                 setTimeout(() => {
                                     // Smooth transition back to original color
                                     container.style.transition = 'none';
