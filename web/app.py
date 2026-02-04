@@ -48,7 +48,9 @@ def players():
         else:
             player["white_skills_avg"] = 0
             player["white_skill_diff"] = 0
-    
+
+    players_data.sort(key=lambda p: p.get("white_skill_diff", 0), reverse=True)
+
     return render_template("players.html", players=players_data)
 
 
