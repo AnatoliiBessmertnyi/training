@@ -630,6 +630,9 @@ function refreshPlan() {
         if (data.gray_skills_avg !== undefined) {
             document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
         }
+        
+        // After updating the plan, also simulate the effect of accepting all trainings
+        setTimeout(simulateAllTrainings, 100); // Small delay to ensure DOM is updated
     })
     .catch(error => console.error('Ошибка:', error));
 }
@@ -723,6 +726,92 @@ function acceptTraining(trainingId, repeats) {
         }
     })
     .catch(error => console.error('Error:', error));
+}
+
+// Function to calculate the effect of accepting all trainings without actually accepting them
+function simulateAllTrainings() {
+    // First, collect all current skill values
+    const currentSkills = {};
+    const skillInputs = document.querySelectorAll('input[type="number"]');
+    skillInputs.forEach(input => {
+        if (input.name && !isNaN(input.value)) {
+            currentSkills[input.name] = parseInt(input.value);
+        }
+    });
+
+    // Clone current skills to simulate changes
+    const simulatedSkills = {...currentSkills};
+
+    // Get all training elements and apply their effects
+    const allTrainingElements = document.querySelectorAll('.recommendation-item');
+    allTrainingElements.forEach(element => {
+        // Get the training details
+        const trainingText = element.querySelector('strong').textContent;
+        const repeatsText = element.querySelector('p:nth-child(2)').textContent;
+        const repeatsMatch = repeatsText.match(/Повторений: (\d+)/);
+        const repeats = repeatsMatch ? parseInt(repeatsMatch[1]) : 1;
+
+        // Extract skills affected by this training
+        const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
+        const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
+        let match;
+        
+        while ((match = skillPattern.exec(skillsText)) !== null) {
+            let skillName = match[1].trim();
+            if (skillName) {
+                // Find the actual skill ID by matching the skill name
+                const allLabels = document.querySelectorAll('label');
+                allLabels.forEach(label => {
+                    if (label.textContent.trim().includes(skillName)) {
+                        const inputId = label.getAttribute('for');
+                        if (inputId && simulatedSkills.hasOwnProperty(inputId)) {
+                            // Apply the training effect (increase by 1 per repeat)
+                            for (let i = 0; i < repeats; i++) {
+                                simulatedSkills[inputId] += 1;
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    });
+
+    // Calculate averages for the simulated skills
+    const allValues = Object.values(simulatedSkills);
+    const allSkillsAvg = allValues.length > 0 ? allValues.reduce((a, b) => a + b, 0) / allValues.length : 0;
+
+    // Determine white skills based on positions (this information might need to be passed from backend)
+    const whiteSkillIds = [];
+    const allSkillInputs = document.querySelectorAll('.skill-input:not(.gray-skill) label');
+    allSkillInputs.forEach(label => {
+        const inputId = label.getAttribute('for');
+        if (inputId) {
+            whiteSkillIds.push(inputId);
+        }
+    });
+
+    const whiteSkillValues = whiteSkillIds.map(id => simulatedSkills[id]).filter(val => val !== undefined);
+    const whiteSkillsAvg = whiteSkillValues.length > 0 ? whiteSkillValues.reduce((a, b) => a + b, 0) / whiteSkillValues.length : 0;
+
+    const graySkillValues = allValues.filter(val => !whiteSkillValues.includes(val) || whiteSkillIds.length !== new Set(whiteSkillIds).size); // Simple approach to get gray skills
+    // Better approach to calculate gray skill values:
+    const graySkillIds = Array.from(document.querySelectorAll('.gray-skill label')).map(label => label.getAttribute('for'));
+    const graySimulatedValues = graySkillIds.map(id => simulatedSkills[id]).filter(val => val !== undefined);
+    const graySkillsAvg = graySimulatedValues.length > 0 ? graySimulatedValues.reduce((a, b) => a + b, 0) / graySimulatedValues.length : 0;
+
+    // Calculate white skill difference
+    const whiteSkillMax = whiteSkillValues.length > 0 ? Math.max(...whiteSkillValues) : 0;
+    const whiteSkillMin = whiteSkillValues.length > 0 ? Math.min(...whiteSkillValues) : 0;
+    const whiteSkillDiff = whiteSkillMax - whiteSkillMin;
+
+    // Update the display with simulated values
+    document.getElementById('after-all-skills-avg').textContent = allSkillsAvg.toFixed(2);
+    document.getElementById('after-white-skills-avg').textContent = whiteSkillsAvg.toFixed(2);
+    document.getElementById('after-gray-skills-avg').textContent = graySkillsAvg.toFixed(2);
+    document.getElementById('after-white-skill-diff').textContent = whiteSkillDiff.toFixed(0);
+
+    // Show the stats card
+    document.getElementById('after-training-averages').style.display = 'block';
 }
 
 // Function to accept all trainings
