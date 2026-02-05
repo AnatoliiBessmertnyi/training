@@ -7,17 +7,30 @@
 {% if players %}
 <div class="players-grid">
     {% for player in players %}
-    <div class="player-card">
+    <div class="player-card" style="
+        {% if player.enhancement_level == 1 %}
+            background: linear-gradient(135deg, #f0e68c, #ffd700);
+        {% elif player.enhancement_level == 2 %}
+            background: linear-gradient(135deg, #7cfc00, #32cd32);
+        {% elif player.enhancement_level == 3 %}
+            background: linear-gradient(135deg, #40e0d0, #20b2aa);
+        {% elif player.enhancement_level == 4 %}
+            background: linear-gradient(135deg, #0000ff, #1e90ff);
+        {% elif player.enhancement_level == 5 %}
+            background: linear-gradient(135deg, #8a2be2, #9370db);
+        {% else %}
+            background: var(--bg-tertiary);
+        {% endif %}">
         <h3>{{ player.name }}</h3>
         <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
         <div class="player-stats">
             <div class="stat">
                 <span class="stat-label">Среднее общее:</span>
-                <span class="stat-value">{{ "%.2f"|format(player.all_skills_avg) }}</span>
+                <span class="stat-value">{{ "%.2f"|format(player.average_overall) }} ({{ "%.2f"|format(player.all_skills_avg) }})</span>
             </div>
             <div class="stat">
                 <span class="stat-label">Среднее белых:</span>
-                <span class="stat-value">{{ "%.2f"|format(player.white_skills_avg) }}</span>
+                <span class="stat-value">{{ "%.2f"|format(player.average_white) }} ({{ "%.2f"|format(player.white_skills_avg) }})</span>
             </div>
             <div class="stat">
                 <span class="stat-label">Разница белых:</span>

@@ -21,6 +21,15 @@ def players():
     
     for player in players_data:
         skills = player.get("skills", {})
+        enhancement_level = player.get("enhancement_level", 0)
+        
+        # Create a Player object to use the enhanced properties
+        player_obj = Player(
+            name=player["name"],
+            positions=player["positions"] or [],
+            skills=skills,
+            enhancement_level=enhancement_level
+        )
         
         if skills:
             all_values = list(skills.values())
@@ -42,6 +51,11 @@ def players():
         else:
             player["white_skills_avg"] = 0
             player["white_skill_diff"] = 0
+        
+        # Add enhanced averages
+        player["average_overall"] = player_obj.average_overall
+        player["average_white"] = player_obj.average_white
+        player["enhancement_level"] = enhancement_level
 
     players_data.sort(key=lambda p: p.get("white_skill_diff", 0), reverse=True)
     return render_template("players.html", players=players_data)
@@ -124,10 +138,12 @@ def player_detail(player_id):
 
     # === GET: initial load ===
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+    enhancement_level = player_data.get("enhancement_level", 0)
     player_obj = Player(
         name=player_data["name"],
         positions=player_data["positions"] or [],
         skills=skills,
+        enhancement_level=enhancement_level
     )
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
@@ -187,10 +203,12 @@ def accept_training(player_id):
 
     if training_id in TRAININGS:
         training_data = TRAININGS[training_id]
+        enhancement_level = player_data.get("enhancement_level", 0)
         player_obj = Player(
             name=player_data["name"],
             positions=player_data["positions"] or [],
             skills=player_data["skills"],
+            enhancement_level=enhancement_level
         )
         for _ in range(repeats):
             player_obj.apply_training(training_data["skills"], gain=1)
@@ -207,10 +225,12 @@ def accept_all_trainings(player_id):
         return "Player not found", 404
 
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+    enhancement_level = player_data.get("enhancement_level", 0)
     player_obj = Player(
         name=player_data["name"],
         positions=player_data["positions"] or [],
         skills=skills,
+        enhancement_level=enhancement_level
     )
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
@@ -256,10 +276,12 @@ def update_skills_and_get_data(player_id):
     gray_skills = set(SKILLS.keys()) - white_skills
 
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
+    enhancement_level = player_data.get("enhancement_level", 0)
     player_obj = Player(
         name=player_data["name"],
         positions=player_data["positions"] or [],
         skills=skills,
+        enhancement_level=enhancement_level
     )
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=training_count)

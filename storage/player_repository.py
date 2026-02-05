@@ -27,6 +27,7 @@ class PlayerRepository:
             "positions": positions,
             "skills": {},
             "training_count": 10,  # Default training count
+            "enhancement_level": 0,  # Default enhancement level
         }
         players.append(player)
         self.save_all(players)
