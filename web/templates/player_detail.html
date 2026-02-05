@@ -45,7 +45,7 @@
     .col-skills,
     .col-plan {
         padding: 1.5rem;
-        min-width: 300px;
+        min-width: 400px;
         /* Minimum width for each column to ensure readability */
     }
 
@@ -60,14 +60,14 @@
     .col-skills {
         flex: 2;
         border-right: 1px solid var(--border-color);
-        min-width: 400px;
+        min-width: 450px;
         overflow-x: auto;
         /* Allow horizontal scroll for content inside */
     }
 
     .col-plan {
         flex: 1.5;
-        min-width: 350px;
+        min-width: 420px;
         overflow-x: auto;
         /* Allow horizontal scroll for content inside */
     }
@@ -208,6 +208,16 @@
         opacity: 0.7;
         background: #2a2a2a !important;
         border-left: 3px solid #a0aec0;
+    }
+
+    .white-skill-in-plan {
+    color: var(--accent-green);
+    font-weight: 600;
+    }
+
+    .gray-skill-in-plan {
+    color: #a0aec0;
+    opacity: 0.85;
     }
 
     .mass-adjustment {
@@ -414,39 +424,46 @@
         </div>
 
         <div class="highlights">
-            <h3>Слабые и сильные навыки</h3>
-            <div class="highlight-item weak">
-                <strong>Слабые белые навыки:</strong>
-                {% if player.skills %}
-                {% set white_skill_items = [] %}
+        <h3>Слабые и сильные навыки</h3>
+        <div style="display: flex; gap: 2rem; margin-top: 10px;">
+            <!-- Сильные (зелёный, мягкий фон) -->
+            <div style="flex: 1; background: rgba(40, 60, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
+            <div style="font-weight: 650; color: var(--accent-green); margin-bottom: 8px;">Сильные навыки</div>
+            {% if player.skills %}
+                {% set ns = namespace(white_list=[]) %}
                 {% for skill_id in white_skills %}
                 {% if skill_id in player.skills %}
-                {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
+                    {% set _ = ns.white_list.append((skill_id, player.skills[skill_id])) %}
                 {% endif %}
                 {% endfor %}
-                {% set sorted_white_skills = white_skill_items|sort(attribute='1') %}
-                {% set weakest = sorted_white_skills[:3] %}
-                {% for skill_id, value in weakest %}
-                {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
-                {% endfor %}
+                {% set sorted_strong = ns.white_list|sort(attribute='1', reverse=true) %}
+                {% for skill_id, value in sorted_strong %}
+                {% if loop.index0 < 3 %}
+                    <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }} <span style="color: var(--accent-green);">({{ value }})</span></div>
                 {% endif %}
+                {% endfor %}
+            {% endif %}
             </div>
-            <div class="highlight-item over">
-                <strong>Перекачанные белые навыки:</strong>
-                {% if player.skills %}
-                {% set white_skill_items = [] %}
+
+             <!-- Слабые (красный, мягкий фон) -->
+            <div style="flex: 1; background: rgba(60, 40, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
+            <div style="font-weight: 650; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
+            {% if player.skills %}
+                {% set ns2 = namespace(white_list=[]) %}
                 {% for skill_id in white_skills %}
                 {% if skill_id in player.skills %}
-                {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
+                    {% set _ = ns2.white_list.append((skill_id, player.skills[skill_id])) %}
                 {% endif %}
                 {% endfor %}
-                {% set sorted_white_skills = white_skill_items|sort(attribute='1', reverse=true) %}
-                {% set strongest = sorted_white_skills[:3] %}
-                {% for skill_id, value in strongest %}
-                {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
-                {% endfor %}
+                {% set sorted_weak = ns2.white_list|sort(attribute='1') %}
+                {% for skill_id, value in sorted_weak %}
+                {% if loop.index0 < 3 %}
+                    <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }} <span style="color: var(--accent-red);">({{ value }})</span></div>
                 {% endif %}
+                {% endfor %}
+            {% endif %}
             </div>
+        </div>
         </div>
     </div>
 
@@ -490,14 +507,6 @@
             {% endif %}
             {% endfor %}
 
-            <div class="mass-adjustment">
-                <button type="button" onclick="applyToAll(-1)" tabindex="-1">-1 ко всем</button>
-                <button type="button" onclick="applyToAll(-5)" tabindex="-1">-5 ко всем</button>
-                <button type="button" onclick="applyToAll(-10)" tabindex="-1">-10 ко всем</button>
-                <button type="button" onclick="applyToAll(1)" tabindex="-1">+1 ко всем</button>
-                <button type="button" onclick="applyToAll(5)" tabindex="-1">+5 ко всем</button>
-                <button type="button" onclick="applyToAll(10)" tabindex="-1">+10 ко всем</button>
-            </div>
         </div>
 
         <div style="margin-top: 20px;">
@@ -522,13 +531,15 @@
             <div class="recommendation-item {{ item.type }}">
                 <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
                 <p><em>Качает навыки:</em>
-                    {% if item.skills %}
-                    {% for skill in item.skills %}
-                    {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
-                    {% endfor %}
-                    {% else %}
-                    Нет указанных навыков
-                    {% endif %}
+                {% if item.skills %}
+                {% for skill in item.skills %}
+                    <span class="{% if skill in white_skills %}white-skill-in-plan{% else %}gray-skill-in-plan{% endif %}">
+                    {{ skill_names[skill] }}
+                    </span>{% if not loop.last %}, {% endif %}
+                {% endfor %}
+                {% else %}
+                Нет указанных навыков
+                {% endif %}
                 </p>
                 <button type="button" class="accept-btn"
                     onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять
@@ -569,18 +580,32 @@
                 // Обновляем план
                 document.querySelector('#plan-container').innerHTML = data.plan_html;
 
-                // Обновляем слабые/сильные навыки
-                const weakestDiv = document.querySelector('.highlight-item.weak');
-                const strongestDiv = document.querySelector('.highlight-item.over');
+                // Обновляем новые колонки "сильные / слабые"
+                const highlightsContainer = document.querySelector('.highlights');
+                if (highlightsContainer && data.weakest_skills && data.strongest_skills) {
+                let weakHtml = '';
+                data.weakest_skills.forEach(s => {
+                    weakHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-red);">(${s.value})</span></div>`;
+                });
 
-                if (weakestDiv) {
-                    const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
-                    weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
-                }
+                let strongHtml = '';
+                data.strongest_skills.forEach(s => {
+                    strongHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-green);">(${s.value})</span></div>`;
+                });
 
-                if (strongestDiv) {
-                    const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
-                    strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
+                highlightsContainer.innerHTML = `
+                    <h3>Слабые и сильные навыки</h3>
+                    <div style="display: flex; gap: 2rem; margin-top: 10px;">
+                    <div style="flex: 1; background: rgba(72, 187, 120, 0.15); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
+                        <div style="font-weight: 600; color: var(--accent-green); margin-bottom: 8px;">Сильные навыки</div>
+                        ${strongHtml}
+                    </div>
+                    <div style="flex: 1; background: rgba(239, 68, 68, 0.15); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
+                        <div style="font-weight: 600; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
+                        ${weakHtml}
+                    </div>
+                    </div>
+                `;
                 }
 
                 // Обновляем текущие средние значения
@@ -672,18 +697,6 @@
                 }
             })
             .catch(error => console.error('Ошибка:', error));
-    }
-
-    function applyToAll(delta) {
-        const inputs = document.querySelectorAll('input[type="number"]');
-        inputs.forEach(input => {
-            let value = parseInt(input.value) || 1;
-            value += delta;
-            if (value < 1) value = 1;
-            if (value > 1000) value = 1000;
-            input.value = value;
-            saveSkillAndRefreshPlan(input.name, value);
-        });
     }
 
     // Function to accept a specific training
