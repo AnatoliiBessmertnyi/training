@@ -19,28 +19,22 @@ def index():
 def players():
     players_data = repo.load_all()
     
-    # Для каждого игрока вычисляем статистику
     for player in players_data:
         skills = player.get("skills", {})
         
-        # Среднее всех навыков
         if skills:
             all_values = list(skills.values())
             player["all_skills_avg"] = sum(all_values) / len(all_values)
         else:
             player["all_skills_avg"] = 0
         
-        # Белые навыки и их среднее
         white_skills = set()
         if player.get("positions"):
             for pos in player["positions"]:
                 if pos in POSITIONS:
                     white_skills.update(POSITIONS[pos]["white_skills"])
         
-        white_skill_values = []
-        for skill_id in white_skills:
-            if skill_id in skills:
-                white_skill_values.append(skills[skill_id])
+        white_skill_values = [skills[skill_id] for skill_id in white_skills if skill_id in skills]
         
         if white_skill_values:
             player["white_skills_avg"] = sum(white_skill_values) / len(white_skill_values)
@@ -50,7 +44,6 @@ def players():
             player["white_skill_diff"] = 0
 
     players_data.sort(key=lambda p: p.get("white_skill_diff", 0), reverse=True)
-
     return render_template("players.html", players=players_data)
 
 
@@ -68,50 +61,40 @@ def new_player():
 @app.route("/players/<player_id>", methods=["GET", "POST"])
 def player_detail(player_id):
     player_data = repo.get(player_id)
-
-    # Check if player exists
     if player_data is None:
         return "Player not found", 404
 
     white_skills = set()
-    if player_data["positions"]:  # Check if positions is not None
+    if player_data["positions"]:
         for pos in player_data["positions"]:
             white_skills.update(POSITIONS[pos]["white_skills"])
+    gray_skills = set(SKILLS.keys()) - white_skills
 
     if request.method == "POST":
-        # Handle skill updates
         for skill in SKILLS.keys():
-            val = request.form.get(f"{skill}")
+            val = request.form.get(skill)
             if val:
                 try:
                     player_data["skills"][skill] = int(val)
                 except ValueError:
-                    pass  # ignore invalid values
+                    pass
 
-        # Update training count if provided
-        training_count = request.form.get(
-            "training_count", player_data.get("training_count", 10)
-        )
+        training_count = request.form.get("training_count", player_data.get("training_count", 10))
         try:
             training_count = int(training_count)
-            if training_count < 1:
-                training_count = 1
-            elif training_count > 100:
-                training_count = 100
+            training_count = max(1, min(100, training_count))
         except ValueError:
             training_count = player_data.get("training_count", 10)
 
         player_data["training_count"] = training_count
         repo.update(player_data)
 
-        # Determine if we need to rebuild the plan
         action = request.form.get("action", "")
         if action == "update_and_plan":
-            # Rebuild plan after update
             skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
             player_obj = Player(
                 name=player_data["name"],
-                positions=player_data["positions"] if player_data["positions"] else [],
+                positions=player_data["positions"] or [],
                 skills=skills,
             )
             recommender = TrainingRecommender(player_obj)
@@ -119,25 +102,16 @@ def player_detail(player_id):
         else:
             plan = []
 
-        # Prepare plan data with training types (only if there's a plan)
-        if plan:
-            plan_with_types = []
-            for item in plan:
-                training_type = TRAININGS.get(item.training_id, {}).get(
-                    "type", "unknown"
-                )
-                plan_with_types.append(
-                    {
-                        "training_id": item.training_id,
-                        "name": item.name,
-                        "repeats": item.repeats,
-                        "skills": item.skills,
-                        "type": training_type,
-                    }
-                )
-            plan_to_render = plan_with_types
-        else:
-            plan_to_render = plan
+        plan_with_types = []
+        for item in plan:
+            training_type = TRAININGS.get(item.training_id, {}).get("type", "unknown")
+            plan_with_types.append({
+                "training_id": item.training_id,
+                "name": item.name,
+                "repeats": item.repeats,
+                "skills": item.skills,
+                "type": training_type,
+            })
 
         return render_template(
             "player_detail.html",
@@ -145,34 +119,47 @@ def player_detail(player_id):
             player_id=player_id,
             white_skills=white_skills,
             skill_names=SKILLS,
-            plan=plan_to_render,
+            plan=plan_with_types,
         )
 
-    # On GET, show player and initial plan
+    # === GET: initial load ===
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
         name=player_data["name"],
-        positions=player_data["positions"] if player_data["positions"] else [],
+        positions=player_data["positions"] or [],
         skills=skills,
     )
     recommender = TrainingRecommender(player_obj)
-    plan = recommender.build_balanced_plan(
-        total_sessions=player_data.get("training_count", 10)
-    )
+    plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
 
-    # Prepare plan data with training types
     plan_with_types = []
     for item in plan:
         training_type = TRAININGS.get(item.training_id, {}).get("type", "unknown")
-        plan_with_types.append(
-            {
-                "training_id": item.training_id,
-                "name": item.name,
-                "repeats": item.repeats,
-                "skills": item.skills,
-                "type": training_type,
-            }
-        )
+        plan_with_types.append({
+            "training_id": item.training_id,
+            "name": item.name,
+            "repeats": item.repeats,
+            "skills": item.skills,
+            "type": training_type,
+        })
+
+    # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК (для начального отображения) ===
+    simulated_skills_after = player_data["skills"].copy()
+    for item in plan:
+        for _ in range(item.repeats):
+            for skill_id in TRAININGS[item.training_id]["skills"]:
+                if skill_id in simulated_skills_after:
+                    simulated_skills_after[skill_id] = min(400, simulated_skills_after[skill_id] + 1)
+
+    after_all_vals = list(simulated_skills_after.values())
+    after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
+
+    after_white_vals = [simulated_skills_after[s] for s in white_skills if s in simulated_skills_after]
+    after_white_avg = sum(after_white_vals) / len(after_white_vals) if after_white_vals else 0
+    after_white_diff = max(after_white_vals) - min(after_white_vals) if after_white_vals else 0
+
+    after_gray_vals = [simulated_skills_after[s] for s in gray_skills if s in simulated_skills_after]
+    after_gray_avg = sum(after_gray_vals) / len(after_gray_vals) if after_gray_vals else 0
 
     return render_template(
         "player_detail.html",
@@ -181,217 +168,160 @@ def player_detail(player_id):
         white_skills=white_skills,
         skill_names=SKILLS,
         plan=plan_with_types,
+        # === ПРОГНОЗНЫЕ ЗНАЧЕНИЯ ДЛЯ ИНИЦИАЛИЗАЦИИ ===
+        after_all_skills_avg=round(after_all_avg, 2),
+        after_white_skills_avg=round(after_white_avg, 2),
+        after_gray_skills_avg=round(after_gray_avg, 2),
+        after_white_skill_difference=after_white_diff,
     )
 
 
 @app.route("/players/<player_id>/accept_training", methods=["POST"])
 def accept_training(player_id):
     player_data = repo.get(player_id)
-
-    # Check if player exists
     if player_data is None:
         return "Player not found", 404
 
     training_id = request.form.get("training_id")
     repeats = int(request.form.get("repeats", 1))
 
-    # Apply the training to the player using Player's method
-    from config.trainings import TRAININGS
-
     if training_id in TRAININGS:
         training_data = TRAININGS[training_id]
-
-        # Create Player object to use its methods
         player_obj = Player(
             name=player_data["name"],
-            positions=player_data["positions"] if player_data["positions"] else [],
+            positions=player_data["positions"] or [],
             skills=player_data["skills"],
         )
-
-        # Apply the training multiple times based on repeats
         for _ in range(repeats):
             player_obj.apply_training(training_data["skills"], gain=1)
-
-        # Update player data with modified skills
         player_data["skills"] = player_obj.skills
 
-    # Save updated player data
     repo.update(player_data)
-
-    # Redirect back to the player detail page
     return redirect(url_for("player_detail", player_id=player_id))
 
 
 @app.route("/players/<player_id>/accept_all_trainings", methods=["POST"])
 def accept_all_trainings(player_id):
     player_data = repo.get(player_id)
-
-    # Check if player exists
     if player_data is None:
         return "Player not found", 404
-
-    # Rebuild the plan to get all current trainings using player's specific training count
-    from domain.training_recommender import TrainingRecommender
-    from domain.player import Player
-    from config.skills import SKILLS
 
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
         name=player_data["name"],
-        positions=player_data["positions"] if player_data["positions"] else [],
+        positions=player_data["positions"] or [],
         skills=skills,
     )
     recommender = TrainingRecommender(player_obj)
-    # Use the player's saved training count instead of hardcoded 10
-    plan = recommender.build_balanced_plan(
-        total_sessions=player_data.get("training_count", 10)
-    )
-
-    # Apply all trainings in the plan using Player's method
-    from config.trainings import TRAININGS
+    plan = recommender.build_balanced_plan(total_sessions=player_data.get("training_count", 10))
 
     for item in plan:
         training_data = TRAININGS[item.training_id]
-        # Apply the training multiple times based on repeats
         for _ in range(item.repeats):
             player_obj.apply_training(training_data["skills"], gain=1)
 
-    # Update player data with modified skills
     player_data["skills"] = player_obj.skills
-
-    # Save updated player data
     repo.update(player_data)
-
-    # Redirect back to the player detail page
     return redirect(url_for("player_detail", player_id=player_id))
 
 
-# 🆕 Новый маршрут для обновления плана и слабых/сильных навыков через JSON
 @app.route("/players/<player_id>/update", methods=["POST"])
 def update_skills_and_get_data(player_id):
     player_data = repo.get(player_id)
-
-    # Check if player exists
     if player_data is None:
         return "Player not found", 404
 
-    # Обновляем навыки
     for skill in SKILLS.keys():
-        val = request.form.get(f"{skill}")
+        val = request.form.get(skill)
         if val:
             try:
                 player_data["skills"][skill] = int(val)
             except ValueError:
                 pass
 
-    # Update training count if provided
-    training_count = request.form.get(
-        "training_count", player_data.get("training_count", 10)
-    )
+    training_count = request.form.get("training_count", player_data.get("training_count", 10))
     try:
         training_count = int(training_count)
-        if training_count < 1:
-            training_count = 1
-        elif training_count > 100:
-            training_count = 100
+        training_count = max(1, min(100, training_count))
     except ValueError:
         training_count = player_data.get("training_count", 10)
 
     player_data["training_count"] = training_count
     repo.update(player_data)
 
-    # Calculate white skills
     white_skills = set()
-    if player_data["positions"]:  # Check if positions is not None
+    if player_data["positions"]:
         for pos in player_data["positions"]:
             white_skills.update(POSITIONS[pos]["white_skills"])
+    gray_skills = set(SKILLS.keys()) - white_skills
 
-    # Пересчитываем план
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     player_obj = Player(
         name=player_data["name"],
-        positions=player_data["positions"] if player_data["positions"] else [],
+        positions=player_data["positions"] or [],
         skills=skills,
     )
-
     recommender = TrainingRecommender(player_obj)
     plan = recommender.build_balanced_plan(total_sessions=training_count)
 
-    # Prepare plan data with training types (to match the format expected by player_detail.html)
     plan_with_types = []
     for item in plan:
         training_type = TRAININGS.get(item.training_id, {}).get("type", "unknown")
-        plan_with_types.append(
-            {
-                "training_id": item.training_id,
-                "name": item.name,
-                "repeats": item.repeats,
-                "skills": item.skills,
-                "type": training_type,
-            }
-        )
+        plan_with_types.append({
+            "training_id": item.training_id,
+            "name": item.name,
+            "repeats": item.repeats,
+            "skills": item.skills,
+            "type": training_type,
+        })
 
-    # Сортируем навыки
-    # Only consider white skills for weak/strong skills display
-    white_skill_items = [
-        (skill_id, player_data["skills"][skill_id])
-        for skill_id in white_skills
-        if skill_id in player_data["skills"]
-    ]
+    white_skill_items = [(skill_id, player_data["skills"][skill_id]) for skill_id in white_skills if skill_id in player_data["skills"]]
     sorted_white_skills = sorted(white_skill_items, key=lambda x: x[1])
-
     weakest = sorted_white_skills[:3]
     strongest = sorted_white_skills[-3:]
 
-    # Calculate averages for all skills, white skills, and gray skills
-    all_skills_values = list(player_data["skills"].values())
-    all_skills_avg = (
-        sum(all_skills_values) / len(all_skills_values) if all_skills_values else 0
-    )
+    all_vals = list(player_data["skills"].values())
+    all_avg = sum(all_vals) / len(all_vals) if all_vals else 0
 
-    white_skills_values = [
-        player_data["skills"][skill_id]
-        for skill_id in white_skills
-        if skill_id in player_data["skills"]
-    ]
-    white_skills_avg = (
-        sum(white_skills_values) / len(white_skills_values)
-        if white_skills_values
-        else 0
-    )
+    white_vals = [player_data["skills"][s] for s in white_skills if s in player_data["skills"]]
+    white_avg = sum(white_vals) / len(white_vals) if white_vals else 0
+    white_diff = max(white_vals) - min(white_vals) if white_vals else 0
 
-    gray_skills = set(SKILLS.keys()) - white_skills
-    gray_skills_values = [
-        player_data["skills"][skill_id]
-        for skill_id in gray_skills
-        if skill_id in player_data["skills"]
-    ]
-    gray_skills_avg = (
-        sum(gray_skills_values) / len(gray_skills_values) if gray_skills_values else 0
-    )
+    gray_vals = [player_data["skills"][s] for s in gray_skills if s in player_data["skills"]]
+    gray_avg = sum(gray_vals) / len(gray_vals) if gray_vals else 0
 
-    # Calculate the difference between strongest and weakest white skills
-    white_skills_values = [v for _, v in sorted_white_skills]
-    white_skill_difference = (
-        max(white_skills_values) - min(white_skills_values)
-        if white_skills_values
-        else 0
-    )
+    # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК ===
+    simulated_skills = player_data["skills"].copy()
+    for item in plan:
+        for _ in range(item.repeats):
+            for skill_id in TRAININGS[item.training_id]["skills"]:
+                if skill_id in simulated_skills:
+                    simulated_skills[skill_id] = min(400, simulated_skills[skill_id] + 1)
 
-    # Возвращаем JSON
-    return jsonify(
-        {
-            "plan_html": render_template(
-                "plan_only.html", plan=plan_with_types, skill_names=SKILLS
-            ),
-            "weakest_skills": [{"name": SKILLS[k], "value": v} for k, v in weakest],
-            "strongest_skills": [{"name": SKILLS[k], "value": v} for k, v in strongest],
-            "all_skills_avg": round(all_skills_avg, 2),
-            "white_skills_avg": round(white_skills_avg, 2),
-            "gray_skills_avg": round(gray_skills_avg, 2),
-            "white_skill_difference": white_skill_difference,
-        }
-    )
+    after_all_vals = list(simulated_skills.values())
+    after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
+
+    after_white_vals = [simulated_skills[s] for s in white_skills if s in simulated_skills]
+    after_white_avg = sum(after_white_vals) / len(after_white_vals) if after_white_vals else 0
+    after_white_diff = max(after_white_vals) - min(after_white_vals) if after_white_vals else 0
+
+    after_gray_vals = [simulated_skills[s] for s in gray_skills if s in simulated_skills]
+    after_gray_avg = sum(after_gray_vals) / len(after_gray_vals) if after_gray_vals else 0
+
+    return jsonify({
+        "plan_html": render_template("plan_only.html", plan=plan_with_types, skill_names=SKILLS),
+        "weakest_skills": [{"name": SKILLS[k], "value": v} for k, v in weakest],
+        "strongest_skills": [{"name": SKILLS[k], "value": v} for k, v in strongest],
+        "all_skills_avg": round(all_avg, 2),
+        "white_skills_avg": round(white_avg, 2),
+        "gray_skills_avg": round(gray_avg, 2),
+        "white_skill_difference": white_diff,
+
+        "after_all_skills_avg": round(after_all_avg, 2),
+        "after_white_skills_avg": round(after_white_avg, 2),
+        "after_gray_skills_avg": round(after_gray_avg, 2),
+        "after_white_skill_difference": after_white_diff,
+    })
 
 
 if __name__ == "__main__":

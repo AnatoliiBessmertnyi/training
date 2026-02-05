@@ -1,8 +1,6 @@
 from web.app import app
 from storage.player_repository import PlayerRepository
 from config.positions import POSITIONS
-from config.skills import SKILLS
-import sys
 
 
 def input_players():

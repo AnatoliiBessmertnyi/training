@@ -5,7 +5,7 @@
 {% block content %}
 <style>
     /* Override base container restrictions for this page */
-    body > div.container {
+    body>div.container {
         max-width: none;
         width: 100%;
         padding: 0;
@@ -14,13 +14,14 @@
         box-shadow: none;
         border: none;
     }
-    
+
     body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         background-color: var(--bg-primary);
         color: var(--text-primary);
         padding: 20px;
-        overflow-x: auto; /* Allow horizontal scrolling for the entire page if needed */
+        overflow-x: auto;
+        /* Allow horizontal scrolling for the entire page if needed */
     }
 
     .container-flex {
@@ -33,15 +34,19 @@
         border-radius: 10px;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
         border: 1px solid var(--border-color);
-        overflow-x: auto;  /* Enable horizontal scrolling if needed */
+        overflow-x: auto;
+        /* Enable horizontal scrolling if needed */
         overflow-y: hidden;
         min-height: 80vh;
         padding: 20px;
     }
 
-    .col-stats, .col-skills, .col-plan {
+    .col-stats,
+    .col-skills,
+    .col-plan {
         padding: 1.5rem;
-        min-width: 300px;  /* Minimum width for each column to ensure readability */
+        min-width: 300px;
+        /* Minimum width for each column to ensure readability */
     }
 
     .col-stats {
@@ -56,13 +61,15 @@
         flex: 2;
         border-right: 1px solid var(--border-color);
         min-width: 400px;
-        overflow-x: auto;  /* Allow horizontal scroll for content inside */
+        overflow-x: auto;
+        /* Allow horizontal scroll for content inside */
     }
 
     .col-plan {
         flex: 1.5;
         min-width: 350px;
-        overflow-x: auto;  /* Allow horizontal scroll for content inside */
+        overflow-x: auto;
+        /* Allow horizontal scroll for content inside */
     }
 
     /* Statistics card */
@@ -90,7 +97,7 @@
         font-weight: 600;
         color: var(--accent-green);
     }
-    
+
     .player-info {
         background: var(--bg-tertiary);
         padding: 1rem;
@@ -98,7 +105,8 @@
         border-left: 4px solid var(--accent-blue);
     }
 
-    h1, h2 {
+    h1,
+    h2 {
         color: var(--text-primary);
         margin-bottom: 1rem;
         border-bottom: 2px solid var(--accent-blue);
@@ -164,6 +172,7 @@
         -webkit-appearance: none;
         margin: 0;
     }
+
     input[type="number"]::-webkit-outer-spin-button,
     input[type="number"]::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -260,8 +269,9 @@
     .recommendation-item strong {
         color: var(--text-primary);
     }
-    
-    .accept-btn, .accept-all-btn {
+
+    .accept-btn,
+    .accept-all-btn {
         padding: 6px 12px;
         background: var(--accent-green);
         color: var(--text-primary);
@@ -271,17 +281,18 @@
         font-size: 0.9rem;
         margin-top: 5px;
     }
-    
-    .accept-btn:hover, .accept-all-btn:hover {
+
+    .accept-btn:hover,
+    .accept-all-btn:hover {
         background: #059669;
     }
-    
+
     .accept-all-btn {
         background: var(--accent-blue);
         padding: 10px 20px;
         font-size: 1rem;
     }
-    
+
     .accept-all-btn:hover {
         background: #2563eb;
     }
@@ -310,30 +321,31 @@
             <h1>{{ player.name }}</h1>
             <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
         </div>
-        
+
         <div class="stats-card">
             <h3>Средние значения навыков</h3>
             <div class="stat-item">
                 <span class="stat-label">Все навыки:</span>
-                <span class="stat-value" id="all-skills-avg">{{ "%.2f"|format((player.skills.values()|sum / player.skills|length) if player.skills else 0) }}</span>
+                <span class="stat-value" id="all-skills-avg">{{ "%.2f"|format((player.skills.values()|sum /
+                    player.skills|length) if player.skills else 0) }}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Белые навыки:</span>
                 <span class="stat-value" id="white-skills-avg">
                     {% if player.skills %}
-                        {% set white_skill_values = [] %}
-                        {% for skill_id in white_skills %}
-                            {% if skill_id in player.skills %}
-                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if white_skill_values %}
-                            {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
-                        {% else %}
-                            0.00
-                        {% endif %}
+                    {% set white_skill_values = [] %}
+                    {% for skill_id in white_skills %}
+                    {% if skill_id in player.skills %}
+                    {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                    {% endif %}
+                    {% endfor %}
+                    {% if white_skill_values %}
+                    {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
                     {% else %}
-                        0.00
+                    0.00
+                    {% endif %}
+                    {% else %}
+                    0.00
                     {% endif %}
                 </span>
             </div>
@@ -341,19 +353,19 @@
                 <span class="stat-label">Серые навыки:</span>
                 <span class="stat-value" id="gray-skills-avg">
                     {% if player.skills %}
-                        {% set gray_skill_values = [] %}
-                        {% for skill_id in skill_names.keys() %}
-                            {% if skill_id not in white_skills and skill_id in player.skills %}
-                                {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if gray_skill_values %}
-                            {{ "%.2f"|format(gray_skill_values|sum / gray_skill_values|length) }}
-                        {% else %}
-                            0.00
-                        {% endif %}
+                    {% set gray_skill_values = [] %}
+                    {% for skill_id in skill_names.keys() %}
+                    {% if skill_id not in white_skills and skill_id in player.skills %}
+                    {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
+                    {% endif %}
+                    {% endfor %}
+                    {% if gray_skill_values %}
+                    {{ "%.2f"|format(gray_skill_values|sum / gray_skill_values|length) }}
                     {% else %}
-                        0.00
+                    0.00
+                    {% endif %}
+                    {% else %}
+                    0.00
                     {% endif %}
                 </span>
             </div>
@@ -361,42 +373,43 @@
                 <span class="stat-label">Разница (сильнейший-слабейший):</span>
                 <span class="stat-value" id="white-skill-diff">
                     {% if player.skills %}
-                        {% set white_skill_values = [] %}
-                        {% for skill_id in white_skills %}
-                            {% if skill_id in player.skills %}
-                                {% set _ = white_skill_values.append(player.skills[skill_id]) %}
-                            {% endif %}
-                        {% endfor %}
-                        {% if white_skill_values %}
-                            {{ (white_skill_values|max - white_skill_values|min) }}
-                        {% else %}
-                            0
-                        {% endif %}
+                    {% set white_skill_values = [] %}
+                    {% for skill_id in white_skills %}
+                    {% if skill_id in player.skills %}
+                    {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                    {% endif %}
+                    {% endfor %}
+                    {% if white_skill_values %}
+                    {{ (white_skill_values|max - white_skill_values|min) }}
                     {% else %}
-                        0
+                    0
+                    {% endif %}
+                    {% else %}
+                    0
                     {% endif %}
                 </span>
             </div>
         </div>
 
         <!-- Stats card for averages after accepting all trainings -->
-        <div class="stats-card" id="after-training-averages" style="display: none;">
+        <div class="stats-card" id="after-training-averages">
             <h3>Средние значения навыков после принятия всех тренировок</h3>
             <div class="stat-item">
                 <span class="stat-label">Все навыки:</span>
-                <span class="stat-value" id="after-all-skills-avg">-</span>
+                <span class="stat-value" id="after-all-skills-avg">{{ "%.2f"|format(after_all_skills_avg) }}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Белые навыки:</span>
-                <span class="stat-value" id="after-white-skills-avg">-</span>
+                <span class="stat-value" id="after-white-skills-avg">{{ "%.2f"|format(after_white_skills_avg) }}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Серые навыки:</span>
-                <span class="stat-value" id="after-gray-skills-avg">-</span>
+                <span class="stat-value" id="after-gray-skills-avg">{{ "%.2f"|format(after_gray_skills_avg) }}</span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Разница (сильнейший-слабейший):</span>
-                <span class="stat-value" id="after-white-skill-diff">-</span>
+                <span class="stat-value" id="after-white-skill-diff">{{ "%.2f"|format(after_white_skill_difference)
+                    }}</span>
             </div>
         </div>
 
@@ -405,77 +418,76 @@
             <div class="highlight-item weak">
                 <strong>Слабые белые навыки:</strong>
                 {% if player.skills %}
-                  {% set white_skill_items = [] %}
-                  {% for skill_id in white_skills %}
-                    {% if skill_id in player.skills %}
-                      {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
-                    {% endif %}
-                  {% endfor %}
-                  {% set sorted_white_skills = white_skill_items|sort(attribute='1') %}
-                  {% set weakest = sorted_white_skills[:3] %}
-                  {% for skill_id, value in weakest %}
-                    {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
-                  {% endfor %}
+                {% set white_skill_items = [] %}
+                {% for skill_id in white_skills %}
+                {% if skill_id in player.skills %}
+                {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
+                {% endif %}
+                {% endfor %}
+                {% set sorted_white_skills = white_skill_items|sort(attribute='1') %}
+                {% set weakest = sorted_white_skills[:3] %}
+                {% for skill_id, value in weakest %}
+                {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
+                {% endfor %}
                 {% endif %}
             </div>
             <div class="highlight-item over">
                 <strong>Перекачанные белые навыки:</strong>
                 {% if player.skills %}
-                  {% set white_skill_items = [] %}
-                  {% for skill_id in white_skills %}
-                    {% if skill_id in player.skills %}
-                      {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
-                    {% endif %}
-                  {% endfor %}
-                  {% set sorted_white_skills = white_skill_items|sort(attribute='1', reverse=true) %}
-                  {% set strongest = sorted_white_skills[:3] %}
-                  {% for skill_id, value in strongest %}
-                    {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
-                  {% endfor %}
+                {% set white_skill_items = [] %}
+                {% for skill_id in white_skills %}
+                {% if skill_id in player.skills %}
+                {% set _ = white_skill_items.append((skill_id, player.skills[skill_id])) %}
+                {% endif %}
+                {% endfor %}
+                {% set sorted_white_skills = white_skill_items|sort(attribute='1', reverse=true) %}
+                {% set strongest = sorted_white_skills[:3] %}
+                {% for skill_id, value in strongest %}
+                {{ skill_names[skill_id] }} ({{ value }}){% if not loop.last %}, {% endif %}
+                {% endfor %}
                 {% endif %}
             </div>
         </div>
     </div>
-    
+
     <div class="col-skills">
         <h2>Навыки</h2>
 
         <div id="skills-form">
             <!-- Display all skills in the defined order from SKILLS config -->
             {% for skill_id in skill_names.keys() %}
-                {% if skill_id in white_skills %}
-                <div class="skill-input">
-                    <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-                    <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" 
-                        value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
-                        onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
-                        tabindex="0"> <!-- Явно указываем, что можно фокусироваться -->
-                    <span class="adjustment-buttons">
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
-                    </span>
-                </div>
-                {% else %}
-                <div class="skill-input gray-skill">
-                    <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-                    <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" 
-                        value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
-                        onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
-                        tabindex="0">
-                    <span class="adjustment-buttons">
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
-                        <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
-                    </span>
-                </div>
-                {% endif %}
+            {% if skill_id in white_skills %}
+            <div class="skill-input">
+                <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
+                <input type="number" id="{{ skill_id }}" name="{{ skill_id }}"
+                    value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
+                    onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)" tabindex="0">
+                <!-- Явно указываем, что можно фокусироваться -->
+                <span class="adjustment-buttons">
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
+                </span>
+            </div>
+            {% else %}
+            <div class="skill-input gray-skill">
+                <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
+                <input type="number" id="{{ skill_id }}" name="{{ skill_id }}"
+                    value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
+                    onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)" tabindex="0">
+                <span class="adjustment-buttons">
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
+                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
+                </span>
+            </div>
+            {% endif %}
             {% endfor %}
 
             <div class="mass-adjustment">
@@ -490,10 +502,14 @@
 
         <div style="margin-top: 20px;">
             <label for="training_count"><strong>Количество тренировок:</strong></label>
-            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1" max="100" style="width: 80px; margin-left: 10px; -moz-appearance: textfield; appearance: none; -webkit-appearance: none;" onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 46;" oninput="this.style.outline = 'none';">
+            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}"
+                min="1" max="100"
+                style="width: 80px; margin-left: 10px; -moz-appearance: textfield; appearance: none; -webkit-appearance: none;"
+                onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 46;"
+                oninput="this.style.outline = 'none';">
             <button type="button" class="btn" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
         </div>
-        
+
         <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
     </div>
 
@@ -505,16 +521,18 @@
             {% for item in plan %}
             <div class="recommendation-item {{ item.type }}">
                 <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
-                <p><em>Качает навыки:</em> 
-                {% if item.skills %}
+                <p><em>Качает навыки:</em>
+                    {% if item.skills %}
                     {% for skill in item.skills %}
-                        {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
+                    {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
                     {% endfor %}
-                {% else %}
+                    {% else %}
                     Нет указанных навыков
-                {% endif %}
+                    {% endif %}
                 </p>
-                <button type="button" class="accept-btn" onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять тренировку</button>
+                <button type="button" class="accept-btn"
+                    onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять
+                    тренировку</button>
             </div>
             {% endfor %}
         </div>
@@ -525,279 +543,301 @@
 </div>
 
 <script>
-let timeout;
+    let timeout;
 
-function changeSkillValue(skillId, delta) {
-    const input = document.getElementById(skillId);
-    let value = parseInt(input.value) || 1;
-    value += delta;
-    if (value < 1) value = 1;
-    if (value > 1000) value = 1000;
-    input.value = value;
-    saveSkillAndRefreshPlan(skillId, value);
-}
-
-function saveSkillAndRefreshPlan(skillId, value) {
-    const trainingCount = document.getElementById('training_count').value;
-    fetch('/players/{{ player_id }}/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `action=update_and_plan&${encodeURIComponent(skillId)}=${encodeURIComponent(value)}&training_count=${encodeURIComponent(trainingCount)}`
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Обновляем план
-        document.querySelector('#plan-container').innerHTML = data.plan_html;
-
-        // Обновляем слабые/сильные навыки
-        const weakestDiv = document.querySelector('.highlight-item.weak');
-        const strongestDiv = document.querySelector('.highlight-item.over');
-
-        if (weakestDiv) {
-            const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
-            weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
-        }
-
-        if (strongestDiv) {
-            const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
-            strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
-        }
-        
-        // Обновляем средние значения навыков
-        if (data.all_skills_avg !== undefined) {
-            document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
-        }
-        if (data.white_skills_avg !== undefined) {
-            document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
-        }
-        if (data.gray_skills_avg !== undefined) {
-        if (data.white_skill_difference !== undefined) {
-            document.getElementById("white-skill-diff").textContent = data.white_skill_difference;
-        }
-            document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
-        }
-    })
-    .catch(error => console.error('Ошибка:', error));
-}
-
-function refreshPlan() {
-    const trainingCount = document.getElementById('training_count').value;
-    
-    // Collect all current skill values
-    const formData = new FormData();
-    formData.append('action', 'update_and_plan');
-    formData.append('training_count', trainingCount);
-    
-    const inputs = document.querySelectorAll('input[type="number"]');
-    inputs.forEach(input => {
-        if (input.name && input.name !== 'training_count') {
-            formData.append(input.name, input.value);
-        }
-    });
-    
-    fetch('/players/{{ player_id }}/update', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Обновляем план
-        document.querySelector('#plan-container').innerHTML = data.plan_html;
-
-        // Обновляем слабые/сильные навыки
-        const weakestDiv = document.querySelector('.highlight-item.weak');
-        const strongestDiv = document.querySelector('.highlight-item.over');
-
-        if (weakestDiv) {
-            const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
-            weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
-        }
-
-        if (strongestDiv) {
-            const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
-            strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
-        }
-        
-        // Обновляем средние значения навыков
-        if (data.all_skills_avg !== undefined) {
-            document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
-        }
-        if (data.white_skills_avg !== undefined) {
-            document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
-        }
-        if (data.gray_skills_avg !== undefined) {
-            document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
-        }
-    })
-    .catch(error => console.error('Ошибка:', error));
-}
-
-function applyToAll(delta) {
-    const inputs = document.querySelectorAll('input[type="number"]');
-    inputs.forEach(input => {
+    function changeSkillValue(skillId, delta) {
+        const input = document.getElementById(skillId);
         let value = parseInt(input.value) || 1;
         value += delta;
         if (value < 1) value = 1;
         if (value > 1000) value = 1000;
         input.value = value;
-        saveSkillAndRefreshPlan(input.name, value);
-    });
-}
+        saveSkillAndRefreshPlan(skillId, value);
+    }
 
-// Function to accept a specific training
-function acceptTraining(trainingId, repeats) {
-    fetch('/players/{{ player_id }}/accept_training', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: `training_id=${encodeURIComponent(trainingId)}&repeats=${encodeURIComponent(repeats)}`
-    })
-    .then(response => {
-        if (response.ok) {
-            // Find the training item to get affected skills
-            const trainingElement = Array.from(document.querySelectorAll('.recommendation-item'))
-                .find(item => item.innerHTML.includes(trainingId));
-                
-            if (trainingElement) {
-                // Extract skill names from the training description
-                const skillsText = trainingElement.querySelector('em')?.nextSibling?.textContent || '';
-                // Parse the skills list - looking for patterns like "skill1, skill2, skill3"
-                const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
-                let match;
-                const affectedSkillNames = [];
-                
-                while ((match = skillPattern.exec(skillsText)) !== null) {
-                    let skillName = match[1].trim();
-                    if (skillName) {
-                        affectedSkillNames.push(skillName);
-                    }
+    function saveSkillAndRefreshPlan(skillId, value) {
+        const trainingCount = document.getElementById('training_count').value;
+        fetch('/players/{{ player_id }}/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `action=update_and_plan&${encodeURIComponent(skillId)}=${encodeURIComponent(value)}&training_count=${encodeURIComponent(trainingCount)}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Обновляем план
+                document.querySelector('#plan-container').innerHTML = data.plan_html;
+
+                // Обновляем слабые/сильные навыки
+                const weakestDiv = document.querySelector('.highlight-item.weak');
+                const strongestDiv = document.querySelector('.highlight-item.over');
+
+                if (weakestDiv) {
+                    const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+                    weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
                 }
-                
-                // Add highlight animation to the affected skill inputs
-                affectedSkillNames.forEach(skillName => {
-                    // Find the skill input by matching the label text (skill name)
-                    const allLabels = document.querySelectorAll('label');
-                    allLabels.forEach(label => {
-                        if (label.textContent.trim().includes(skillName)) {
-                            // Find the corresponding input
-                            const inputId = label.getAttribute('for');
-                            const inputElement = document.getElementById(inputId);
-                            if (inputElement) {
-                                const container = inputElement.closest('.skill-input');
-                                if (container) {
-                                    // Add highlight effect
-                                    container.style.backgroundColor = '#3B82F6'; // yellow highlight
-                                    setTimeout(() => {
-                                        // Smooth transition back to original color
-                                        container.style.transition = 'none';
-                                        container.style.backgroundColor = '';
-                                        
-                                        // Also handle gray-skill styling if needed
-                                        if (container.classList.contains('gray-skill')) {
-                                            container.style.backgroundColor = '#f0f0f0';
+
+                if (strongestDiv) {
+                    const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+                    strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
+                }
+
+                // Обновляем текущие средние значения
+                if (data.all_skills_avg !== undefined) {
+                    document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+                }
+                if (data.white_skills_avg !== undefined) {
+                    document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+                }
+                if (data.gray_skills_avg !== undefined) {
+                    document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
+                }
+                if (data.white_skill_difference !== undefined) {
+                    document.getElementById("white-skill-diff").textContent = data.white_skill_difference;
+                }
+
+                // === НОВОЕ: Обновляем ПРОГНОЗИРУЕМЫЕ значения ===
+                const afterCard = document.getElementById('after-training-averages');
+                if (afterCard && data.after_all_skills_avg !== undefined) {
+                    afterCard.style.display = 'block';
+                    document.getElementById('after-all-skills-avg').textContent = data.after_all_skills_avg.toFixed(2);
+                    document.getElementById('after-white-skills-avg').textContent = data.after_white_skills_avg.toFixed(2);
+                    document.getElementById('after-gray-skills-avg').textContent = data.after_gray_skills_avg.toFixed(2);
+                    document.getElementById('after-white-skill-diff').textContent = data.after_white_skill_difference;
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+    }
+
+    function refreshPlan() {
+        const trainingCount = document.getElementById('training_count').value;
+
+        const formData = new FormData();
+        formData.append('action', 'update_and_plan');
+        formData.append('training_count', trainingCount);
+
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            if (input.name && input.name !== 'training_count') {
+                formData.append(input.name, input.value);
+            }
+        });
+
+        fetch('/players/{{ player_id }}/update', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                // Обновляем план
+                document.querySelector('#plan-container').innerHTML = data.plan_html;
+
+                // Обновляем слабые/сильные навыки
+                const weakestDiv = document.querySelector('.highlight-item.weak');
+                const strongestDiv = document.querySelector('.highlight-item.over');
+
+                if (weakestDiv) {
+                    const weakestText = data.weakest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+                    weakestDiv.innerHTML = `<strong>Слабые навыки:</strong> ${weakestText}`;
+                }
+
+                if (strongestDiv) {
+                    const strongestText = data.strongest_skills.map(s => `${s.name} (${s.value})`).join(', ');
+                    strongestDiv.innerHTML = `<strong>Перекачанные навыки:</strong> ${strongestText}`;
+                }
+
+                // Обновляем текущие средние значения
+                if (data.all_skills_avg !== undefined) {
+                    document.getElementById('all-skills-avg').textContent = data.all_skills_avg.toFixed(2);
+                }
+                if (data.white_skills_avg !== undefined) {
+                    document.getElementById('white-skills-avg').textContent = data.white_skills_avg.toFixed(2);
+                }
+                if (data.gray_skills_avg !== undefined) {
+                    document.getElementById('gray-skills-avg').textContent = data.gray_skills_avg.toFixed(2);
+                }
+                if (data.white_skill_difference !== undefined) {
+                    document.getElementById("white-skill-diff").textContent = data.white_skill_difference;
+                }
+
+                // === НОВОЕ: Обновляем ПРОГНОЗИРУЕМЫЕ значения ===
+                const afterCard = document.getElementById('after-training-averages');
+                if (afterCard && data.after_all_skills_avg !== undefined) {
+                    afterCard.style.display = 'block';
+                    document.getElementById('after-all-skills-avg').textContent = data.after_all_skills_avg.toFixed(2);
+                    document.getElementById('after-white-skills-avg').textContent = data.after_white_skills_avg.toFixed(2);
+                    document.getElementById('after-gray-skills-avg').textContent = data.after_gray_skills_avg.toFixed(2);
+                    document.getElementById('after-white-skill-diff').textContent = data.after_white_skill_difference;
+                }
+            })
+            .catch(error => console.error('Ошибка:', error));
+    }
+
+    function applyToAll(delta) {
+        const inputs = document.querySelectorAll('input[type="number"]');
+        inputs.forEach(input => {
+            let value = parseInt(input.value) || 1;
+            value += delta;
+            if (value < 1) value = 1;
+            if (value > 1000) value = 1000;
+            input.value = value;
+            saveSkillAndRefreshPlan(input.name, value);
+        });
+    }
+
+    // Function to accept a specific training
+    function acceptTraining(trainingId, repeats) {
+        fetch('/players/{{ player_id }}/accept_training', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `training_id=${encodeURIComponent(trainingId)}&repeats=${encodeURIComponent(repeats)}`
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Find the training item to get affected skills
+                    const trainingElement = Array.from(document.querySelectorAll('.recommendation-item'))
+                        .find(item => item.innerHTML.includes(trainingId));
+
+                    if (trainingElement) {
+                        // Extract skill names from the training description
+                        const skillsText = trainingElement.querySelector('em')?.nextSibling?.textContent || '';
+                        // Parse the skills list - looking for patterns like "skill1, skill2, skill3"
+                        const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
+                        let match;
+                        const affectedSkillNames = [];
+
+                        while ((match = skillPattern.exec(skillsText)) !== null) {
+                            let skillName = match[1].trim();
+                            if (skillName) {
+                                affectedSkillNames.push(skillName);
+                            }
+                        }
+
+                        // Add highlight animation to the affected skill inputs
+                        affectedSkillNames.forEach(skillName => {
+                            // Find the skill input by matching the label text (skill name)
+                            const allLabels = document.querySelectorAll('label');
+                            allLabels.forEach(label => {
+                                if (label.textContent.trim().includes(skillName)) {
+                                    // Find the corresponding input
+                                    const inputId = label.getAttribute('for');
+                                    const inputElement = document.getElementById(inputId);
+                                    if (inputElement) {
+                                        const container = inputElement.closest('.skill-input');
+                                        if (container) {
+                                            // Add highlight effect
+                                            container.style.backgroundColor = '#3B82F6'; // yellow highlight
+                                            setTimeout(() => {
+                                                // Smooth transition back to original color
+                                                container.style.transition = 'none';
+                                                container.style.backgroundColor = '';
+
+                                                // Also handle gray-skill styling if needed
+                                                if (container.classList.contains('gray-skill')) {
+                                                    container.style.backgroundColor = '#f0f0f0';
+                                                }
+
+                                                // Remove transition property after animation completes
+                                                setTimeout(() => {
+                                                    if (container) {
+                                                        container.style.transition = '';
+                                                    }
+                                                }, 1500);
+                                            }, 100); // Small delay to ensure highlight is visible
                                         }
-                                        
-                                        // Remove transition property after animation completes
+                                    }
+                                }
+                            });
+                        });
+                    }
+
+                    // Refresh the page to show updated skills and plan after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1600); // Wait for the highlight animation before reload
+                } else {
+                    console.error('Error accepting training');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
+
+    // Function to accept all trainings
+    function acceptAllTrainings() {
+        // Get all training elements to find affected skills
+        const allTrainingElements = document.querySelectorAll('.recommendation-item');
+        const allAffectedSkillNames = [];
+
+        allTrainingElements.forEach(element => {
+            const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
+            const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
+            let match;
+
+            while ((match = skillPattern.exec(skillsText)) !== null) {
+                let skillName = match[1].trim();
+                if (skillName) {
+                    allAffectedSkillNames.push(skillName);
+                }
+            }
+        });
+        fetch('/players/{{ player_id }}/accept_all_trainings', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: ''
+        })
+            .then(response => {
+                if (response.ok) {
+                    // Add highlight animation to all affected skill inputs
+                    allAffectedSkillNames.forEach(skillName => {
+                        // Find the skill input by matching the label text (skill name)
+                        const allLabels = document.querySelectorAll('label');
+                        allLabels.forEach(label => {
+                            if (label.textContent.trim().includes(skillName)) {
+                                // Find the corresponding input
+                                const inputId = label.getAttribute('for');
+                                const inputElement = document.getElementById(inputId);
+                                if (inputElement) {
+                                    const container = inputElement.closest('.skill-input');
+                                    if (container) {
+                                        // Add highlight effect
+                                        container.style.backgroundColor = '#3B82F6'; // yellow highlight
                                         setTimeout(() => {
-                                            if (container) {
-                                                container.style.transition = '';
+                                            // Smooth transition back to original color
+                                            container.style.transition = 'none';
+                                            container.style.backgroundColor = '';
+
+                                            // Also handle gray-skill styling if needed
+                                            if (container.classList.contains('gray-skill')) {
+                                                container.style.backgroundColor = '#f0f0f0';
                                             }
-                                        }, 1500);
-                                    }, 100); // Small delay to ensure highlight is visible
+
+                                            // Remove transition property after animation completes
+                                            setTimeout(() => {
+                                                if (container) {
+                                                    container.style.transition = '';
+                                                }
+                                            }, 1500);
+                                        }, 100); // Small delay to ensure highlight is visible
+                                    }
                                 }
                             }
-                        }
+                        });
                     });
-                });
-            }
-            
-            // Refresh the page to show updated skills and plan after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 1600); // Wait for the highlight animation before reload
-        } else {
-            console.error('Error accepting training');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
 
-// Function to accept all trainings
-function acceptAllTrainings() {
-    // Get all training elements to find affected skills
-    const allTrainingElements = document.querySelectorAll('.recommendation-item');
-    const allAffectedSkillNames = [];
-    
-    allTrainingElements.forEach(element => {
-        const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
-        const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
-        let match;
-        
-        while ((match = skillPattern.exec(skillsText)) !== null) {
-            let skillName = match[1].trim();
-            if (skillName) {
-                allAffectedSkillNames.push(skillName);
-            }
-        }
-    });
-    fetch('/players/{{ player_id }}/accept_all_trainings', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: ''
-    })
-    .then(response => {
-        if (response.ok) {
-            // Add highlight animation to all affected skill inputs
-            allAffectedSkillNames.forEach(skillName => {
-                // Find the skill input by matching the label text (skill name)
-                const allLabels = document.querySelectorAll('label');
-                allLabels.forEach(label => {
-                    if (label.textContent.trim().includes(skillName)) {
-                        // Find the corresponding input
-                        const inputId = label.getAttribute('for');
-                        const inputElement = document.getElementById(inputId);
-                        if (inputElement) {
-                            const container = inputElement.closest('.skill-input');
-                            if (container) {
-                                // Add highlight effect
-                                container.style.backgroundColor = '#3B82F6'; // yellow highlight
-                                setTimeout(() => {
-                                    // Smooth transition back to original color
-                                    container.style.transition = 'none';
-                                    container.style.backgroundColor = '';
-                                    
-                                    // Also handle gray-skill styling if needed
-                                    if (container.classList.contains('gray-skill')) {
-                                        container.style.backgroundColor = '#f0f0f0';
-                                    }
-                                    
-                                    // Remove transition property after animation completes
-                                    setTimeout(() => {
-                                        if (container) {
-                                            container.style.transition = '';
-                                        }
-                                    }, 1500);
-                                }, 100); // Small delay to ensure highlight is visible
-                            }
-                        }
-                    }
-                });
-            });
-            
-            // Refresh the page to show updated skills and plan after a short delay
-            setTimeout(() => {
-                window.location.reload();
-            }, 1600); // Wait for the highlight animation before reload
-        } else {
-            console.error('Error accepting all trainings');
-        }
-    })
-    .catch(error => console.error('Error:', error));
-}
+                    // Refresh the page to show updated skills and plan after a short delay
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1600); // Wait for the highlight animation before reload
+                } else {
+                    console.error('Error accepting all trainings');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+    }
 </script>
 {% endblock %}
