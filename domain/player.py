@@ -49,6 +49,12 @@ class Player:
         sorted_skills = sorted(whites.items(), key=lambda x: x[1])
         return [skill for skill, val in sorted_skills[:top_n]]
 
+    def strongest_white_skills(self, top_n: int = 3) -> List[str]:
+        """Возвращает top_n белых навыков с максимальным значением"""
+        whites = {skill: self.skills[skill] for skill in self.white_skills}
+        sorted_skills = sorted(whites.items(), key=lambda x: x[1], reverse=True)
+        return [skill for skill, val in sorted_skills[:top_n]]
+
     def apply_training(self, training_skills: List[str], gain: int = 1):
         """
         Применение тренировки к игроку.
@@ -100,3 +106,24 @@ class Player:
         if not enhanced_white_skills:
             return 0
         return sum(enhanced_white_skills.values()) / len(enhanced_white_skills)
+
+    @property
+    def raw_average_overall(self) -> float:
+        """Среднее без усиления (но со всеми навыками, включая недостающие = 1)"""
+        values = [self.skills.get(skill_id, 1) for skill_id in SKILLS]
+        return sum(values) / len(values)
+
+    @property
+    def raw_average_white(self) -> float:
+        white_vals = [self.skills.get(skill_id, 1) for skill_id in self.white_skills]
+        return sum(white_vals) / len(white_vals) if white_vals else 0
+
+    @property
+    def raw_average_gray(self) -> float:
+        gray_vals = [self.skills.get(skill_id, 1) for skill_id in self.gray_skills]
+        return sum(gray_vals) / len(gray_vals) if gray_vals else 0
+
+    @property
+    def raw_white_skill_difference(self) -> int:
+        white_vals = [self.skills.get(skill_id, 1) for skill_id in self.white_skills]
+        return max(white_vals) - min(white_vals) if white_vals else 0

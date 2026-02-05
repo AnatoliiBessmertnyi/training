@@ -20,42 +20,23 @@ def players():
     players_data = repo.load_all()
     
     for player in players_data:
-        skills = player.get("skills", {})
-        enhancement_level = player.get("enhancement_level", 0)
-        
-        # Create a Player object to use the enhanced properties
+        # === ИСПОЛЬЗУЕМ Player ДЛЯ ВСЕХ РАСЧЁТОВ ===
         player_obj = Player(
             name=player["name"],
             positions=player["positions"] or [],
-            skills=skills,
-            enhancement_level=enhancement_level
+            skills=player.get("skills", {}),
+            enhancement_level=player.get("enhancement_level", 0)
         )
         
-        if skills:
-            all_values = list(skills.values())
-            player["all_skills_avg"] = sum(all_values) / len(all_values)
-        else:
-            player["all_skills_avg"] = 0
+        # Сырые средние (без усиления)
+        player["all_skills_avg"] = player_obj.raw_average_overall
+        player["white_skills_avg"] = player_obj.raw_average_white
+        player["white_skill_diff"] = player_obj.raw_white_skill_difference
         
-        white_skills = set()
-        if player.get("positions"):
-            for pos in player["positions"]:
-                if pos in POSITIONS:
-                    white_skills.update(POSITIONS[pos]["white_skills"])
-        
-        white_skill_values = [skills[skill_id] for skill_id in white_skills if skill_id in skills]
-        
-        if white_skill_values:
-            player["white_skills_avg"] = sum(white_skill_values) / len(white_skill_values)
-            player["white_skill_diff"] = max(white_skill_values) - min(white_skill_values)
-        else:
-            player["white_skills_avg"] = 0
-            player["white_skill_diff"] = 0
-        
-        # Add enhanced averages
+        # Усиленные средние
         player["average_overall"] = player_obj.average_overall
         player["average_white"] = player_obj.average_white
-        player["enhancement_level"] = enhancement_level
+        player["enhancement_level"] = player_obj.enhancement_level
 
     players_data.sort(key=lambda p: p.get("white_skill_diff", 0), reverse=True)
     return render_template("players.html", players=players_data)
@@ -77,12 +58,6 @@ def player_detail(player_id):
     player_data = repo.get(player_id)
     if player_data is None:
         return "Player not found", 404
-
-    white_skills = set()
-    if player_data["positions"]:
-        for pos in player_data["positions"]:
-            white_skills.update(POSITIONS[pos]["white_skills"])
-    gray_skills = set(SKILLS.keys()) - white_skills
 
     if request.method == "POST":
         for skill in SKILLS.keys():
@@ -131,7 +106,7 @@ def player_detail(player_id):
             "player_detail.html",
             player=player_data,
             player_id=player_id,
-            white_skills=white_skills,
+            white_skills=set(),  # не используется в POST-ответе
             skill_names=SKILLS,
             plan=plan_with_types,
         )
@@ -159,7 +134,7 @@ def player_detail(player_id):
             "type": training_type,
         })
 
-    # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК (для начального отображения) ===
+    # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК ===
     simulated_skills_after = player_data["skills"].copy()
     for item in plan:
         for _ in range(item.repeats):
@@ -170,21 +145,21 @@ def player_detail(player_id):
     after_all_vals = list(simulated_skills_after.values())
     after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
 
-    after_white_vals = [simulated_skills_after[s] for s in white_skills if s in simulated_skills_after]
+    after_white_vals = [simulated_skills_after[s] for s in player_obj.white_skills if s in simulated_skills_after]
     after_white_avg = sum(after_white_vals) / len(after_white_vals) if after_white_vals else 0
     after_white_diff = max(after_white_vals) - min(after_white_vals) if after_white_vals else 0
 
-    after_gray_vals = [simulated_skills_after[s] for s in gray_skills if s in simulated_skills_after]
+    after_gray_vals = [simulated_skills_after[s] for s in player_obj.gray_skills if s in simulated_skills_after]
     after_gray_avg = sum(after_gray_vals) / len(after_gray_vals) if after_gray_vals else 0
 
     return render_template(
         "player_detail.html",
-        player=player_data,
+        player_dict=player_data,
+        player=player_obj,
         player_id=player_id,
-        white_skills=white_skills,
+        white_skills=player_obj.white_skills,
         skill_names=SKILLS,
         plan=plan_with_types,
-        # === ПРОГНОЗНЫЕ ЗНАЧЕНИЯ ДЛЯ ИНИЦИАЛИЗАЦИИ ===
         after_all_skills_avg=round(after_all_avg, 2),
         after_white_skills_avg=round(after_white_avg, 2),
         after_gray_skills_avg=round(after_gray_avg, 2),
@@ -269,12 +244,7 @@ def update_skills_and_get_data(player_id):
     player_data["training_count"] = training_count
     repo.update(player_data)
 
-    white_skills = set()
-    if player_data["positions"]:
-        for pos in player_data["positions"]:
-            white_skills.update(POSITIONS[pos]["white_skills"])
-    gray_skills = set(SKILLS.keys()) - white_skills
-
+    # === ИСПОЛЬЗУЕМ Player ДЛЯ ВСЕХ РАСЧЁТОВ ===
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
     enhancement_level = player_data.get("enhancement_level", 0)
     player_obj = Player(
@@ -297,20 +267,21 @@ def update_skills_and_get_data(player_id):
             "type": training_type,
         })
 
-    white_skill_items = [(skill_id, player_data["skills"][skill_id]) for skill_id in white_skills if skill_id in player_data["skills"]]
-    sorted_white_skills = sorted(white_skill_items, key=lambda x: x[1])
-    weakest = sorted_white_skills[:3]
-    strongest = sorted_white_skills[-3:]
+    # === СЛАБЫЕ И СИЛЬНЫЕ НАВЫКИ ===
+    weakest = [
+        {"name": SKILLS[k], "value": player_obj.skills[k]} 
+        for k in player_obj.weakest_white_skills(3)
+    ]
+    strongest = [
+        {"name": SKILLS[k], "value": player_obj.skills[k]} 
+        for k in player_obj.strongest_white_skills(3)
+    ]
 
-    all_vals = list(player_data["skills"].values())
-    all_avg = sum(all_vals) / len(all_vals) if all_vals else 0
-
-    white_vals = [player_data["skills"][s] for s in white_skills if s in player_data["skills"]]
-    white_avg = sum(white_vals) / len(white_vals) if white_vals else 0
-    white_diff = max(white_vals) - min(white_vals) if white_vals else 0
-
-    gray_vals = [player_data["skills"][s] for s in gray_skills if s in player_data["skills"]]
-    gray_avg = sum(gray_vals) / len(gray_vals) if gray_vals else 0
+    # === СРЕДНИЕ БЕЗ УСИЛЕНИЯ ===
+    all_avg = player_obj.raw_average_overall
+    white_avg = player_obj.raw_average_white
+    gray_avg = player_obj.raw_average_gray
+    white_diff = player_obj.raw_white_skill_difference
 
     # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК ===
     simulated_skills = player_data["skills"].copy()
@@ -323,17 +294,17 @@ def update_skills_and_get_data(player_id):
     after_all_vals = list(simulated_skills.values())
     after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
 
-    after_white_vals = [simulated_skills[s] for s in white_skills if s in simulated_skills]
+    after_white_vals = [simulated_skills[s] for s in player_obj.white_skills if s in simulated_skills]
     after_white_avg = sum(after_white_vals) / len(after_white_vals) if after_white_vals else 0
     after_white_diff = max(after_white_vals) - min(after_white_vals) if after_white_vals else 0
 
-    after_gray_vals = [simulated_skills[s] for s in gray_skills if s in simulated_skills]
+    after_gray_vals = [simulated_skills[s] for s in player_obj.gray_skills if s in simulated_skills]
     after_gray_avg = sum(after_gray_vals) / len(after_gray_vals) if after_gray_vals else 0
 
     return jsonify({
         "plan_html": render_template("plan_only.html", plan=plan_with_types, skill_names=SKILLS),
-        "weakest_skills": [{"name": SKILLS[k], "value": v} for k, v in weakest],
-        "strongest_skills": [{"name": SKILLS[k], "value": v} for k, v in strongest],
+        "weakest_skills": weakest,
+        "strongest_skills": strongest,
         "all_skills_avg": round(all_avg, 2),
         "white_skills_avg": round(white_avg, 2),
         "gray_skills_avg": round(gray_avg, 2),

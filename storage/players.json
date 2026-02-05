@@ -25,7 +25,8 @@
         "pace": 154,
         "creativity": 129
       },
-      "training_count": 10
+      "training_count": 10,
+      "enhancement_level": 0
     },
     {
       "id": "a4daad44-f18a-4121-bfda-a3ed61af7fab",
@@ -51,7 +52,8 @@
         "pace": 274,
         "creativity": 222
       },
-      "training_count": 15
+      "training_count": 15,
+      "enhancement_level": 4
     },
     {
       "id": "d4891646-4a95-4d56-9004-4d3323d5fd0d",
@@ -253,6 +255,32 @@
         "creativity": 69
       },
       "training_count": 10
+    },
+    {
+      "id": "27930019-9f03-4aef-8bfe-1177489ebd98",
+      "name": "s",
+      "positions": [
+        "DC"
+      ],
+      "skills": {
+        "tackling": 31,
+        "marking": 24,
+        "positioning": 23,
+        "heading": 30,
+        "bravery": 32,
+        "passing": 11,
+        "dribbling": 3,
+        "cross": 2,
+        "shooting": 1,
+        "finishing": 1,
+        "physical": 26,
+        "strength": 23,
+        "aggressiveness": 24,
+        "pace": 3,
+        "creativity": 3
+      },
+      "training_count": 10,
+      "enhancement_level": 1
     }
   ]
 }
