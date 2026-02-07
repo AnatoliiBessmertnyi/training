@@ -1,6 +1,7 @@
 import json
 import uuid
 from pathlib import Path
+from config.skills import SKILLS 
 
 
 class PlayerRepository:
@@ -21,12 +22,15 @@ class PlayerRepository:
 
     def create(self, name, positions):
         players = self.load_all()
+        # Инициализируем ВСЕ навыки значением 1
+        skills = {skill_id: 1 for skill_id in SKILLS}
         player = {
             "id": str(uuid.uuid4()),
             "name": name,
             "positions": positions,
-            "skills": {},
-            "training_count": 10,  # Default training count
+            "skills": skills,
+            "training_count": 10,
+            "enhancement_level": 0,
         }
         players.append(player)
         self.save_all(players)
