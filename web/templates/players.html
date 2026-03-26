@@ -8,7 +8,7 @@
 <div class="players-grid">
     {% for player in players %}
     <div class="player-card rank-{{ player.get('rank', 0) }}">
-        <div class="rank-badge">Ранг {{ player.get('rank', 0) }}</div>
+        <div class="rank-badge">Ранг {{ player.get('rank', 0) }} (+{{ player.get('rank_bonus', 0) }})</div>
         <h3>{{ player.name }}</h3>
         <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
         <div class="player-stats">
@@ -24,6 +24,9 @@
                 <span class="stat-label">Разница белых:</span>
                 <span class="stat-value">{{ player.white_skill_diff }}</span>
             </div>
+        </div>
+        <div class="player-rank-info">
+            <small>📊 Статистика включает бонус ранга: <strong>+{{ player.get('rank_bonus', 0) }}</strong></small>
         </div>
         <div class="player-actions">
             <a href="{{ url_for('player_detail', player_id=player.id) }}" class="btn">Открыть детали</a>
@@ -241,6 +244,25 @@
 
     .rank-6 .stat-value {
         color: #2e0219;
+    }
+
+    .player-rank-info {
+        margin: 10px 0;
+        padding: 8px;
+        background: rgba(0, 0, 0, 0.15);
+        border-radius: 4px;
+        text-align: center;
+        font-size: 0.85rem;
+    }
+
+    .rank-1 .player-rank-info,
+    .rank-2 .player-rank-info,
+    .rank-3 .player-rank-info,
+    .rank-4 .player-rank-info,
+    .rank-5 .player-rank-info,
+    .rank-6 .player-rank-info {
+        background: rgba(255, 255, 255, 0.3);
+        color: #1a1a1a;
     }
 </style>
 {% endblock %}

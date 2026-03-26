@@ -453,30 +453,26 @@
         </div>
 
         <div class="stats-card">
-            <h3>Средние значения навыков</h3>
+            <h3>Средние значения навыков <small style="font-weight:400;font-size:0.9em;color:var(--text-secondary)">(с
+                    бонусом ранга +{{ rank_bonus }})</small></h3>
             <div class="stat-item">
                 <span class="stat-label">Все навыки:</span>
-                <span class="stat-value" id="all-skills-avg">{{ "%.2f"|format((player.skills.values()|sum /
-                    player.skills|length) if player.skills else 0) }}</span>
+                <span class="stat-value" id="all-skills-avg">
+                    {% if effective_skills %}
+                    {{ "%.2f"|format(effective_skills.values()|sum / effective_skills|length) }}
+                    {% else %}0.00{% endif %}
+                </span>
             </div>
             <div class="stat-item">
                 <span class="stat-label">Белые навыки:</span>
                 <span class="stat-value" id="white-skills-avg">
-                    {% if player.skills %}
-                    {% set white_skill_values = [] %}
-                    {% for skill_id in white_skills %}
-                    {% if skill_id in player.skills %}
-                    {% set _ = white_skill_values.append(player.skills[skill_id]) %}
-                    {% endif %}
+                    {% if effective_skills %}
+                    {% set white_vals = [] %}
+                    {% for sid in white_skills %}
+                    {% if sid in effective_skills %}{% set _ = white_vals.append(effective_skills[sid]) %}{% endif %}
                     {% endfor %}
-                    {% if white_skill_values %}
-                    {{ "%.2f"|format(white_skill_values|sum / white_skill_values|length) }}
-                    {% else %}
-                    0.00
-                    {% endif %}
-                    {% else %}
-                    0.00
-                    {% endif %}
+                    {% if white_vals %}{{ "%.2f"|format(white_vals|sum / white_vals|length) }}{% else %}0.00{% endif %}
+                    {% else %}0.00{% endif %}
                 </span>
             </div>
             <div class="stat-item">
@@ -485,8 +481,8 @@
                     {% if player.skills %}
                     {% set gray_skill_values = [] %}
                     {% for skill_id in skill_names.keys() %}
-                    {% if skill_id not in white_skills and skill_id in player.skills %}
-                    {% set _ = gray_skill_values.append(player.skills[skill_id]) %}
+                    {% if skill_id not in white_skills and skill_id in effective_skills %}
+                    {% set _ = gray_skill_values.append(effective_skills[skill_id]) %}
                     {% endif %}
                     {% endfor %}
                     {% if gray_skill_values %}
@@ -505,8 +501,8 @@
                     {% if player.skills %}
                     {% set white_skill_values = [] %}
                     {% for skill_id in white_skills %}
-                    {% if skill_id in player.skills %}
-                    {% set _ = white_skill_values.append(player.skills[skill_id]) %}
+                    {% if skill_id in effective_skills %}
+                    {% set _ = white_skill_values.append(effective_skills[skill_id]) %}
                     {% endif %}
                     {% endfor %}
                     {% if white_skill_values %}
@@ -552,8 +548,8 @@
                     {% if player.skills %}
                     {% set ns = namespace(white_list=[]) %}
                     {% for skill_id in white_skills %}
-                    {% if skill_id in player.skills %}
-                    {% set _ = ns.white_list.append((skill_id, player.skills[skill_id])) %}
+                    {% if skill_id in effective_skills %}
+                    {% set _ = ns.white_list.append((skill_id, effective_skills[skill_id])) %}
                     {% endif %}
                     {% endfor %}
                     {% set sorted_strong = ns.white_list|sort(attribute='1', reverse=true) %}
@@ -571,13 +567,13 @@
                 style="flex: 1; background: rgba(60, 40, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
                 <div style="font-weight: 650; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
                 {% if player.skills %}
-                {% set ns2 = namespace(white_list=[]) %}
+                {% set ns = namespace(white_list=[]) %}
                 {% for skill_id in white_skills %}
-                {% if skill_id in player.skills %}
-                {% set _ = ns2.white_list.append((skill_id, player.skills[skill_id])) %}
+                {% if skill_id in effective_skills %}
+                {% set _ = ns.white_list.append((skill_id, effective_skills[skill_id])) %}
                 {% endif %}
                 {% endfor %}
-                {% set sorted_weak = ns2.white_list|sort(attribute='1') %}
+                {% set sorted_weak = ns.white_list|sort(attribute='1') %}
                 {% for skill_id, value in sorted_weak %}
                 {% if loop.index0 < 3 %} <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }} <span
                         style="color: var(--accent-red);">({{ value }})</span>
@@ -599,9 +595,9 @@
         {% if skill_id in white_skills %}
         <div class="skill-input">
             <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" value="{{ player.skills.get(skill_id, 1) }}"
-                min="1" max="1000" step="1" onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
-                tabindex="0">
+            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}"
+                value="{{ effective_skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
+                onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)" tabindex="0">
             <!-- Явно указываем, что можно фокусироваться -->
             <span class="adjustment-buttons">
                 <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
@@ -615,9 +611,9 @@
         {% else %}
         <div class="skill-input gray-skill">
             <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" value="{{ player.skills.get(skill_id, 1) }}"
-                min="1" max="1000" step="1" onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
-                tabindex="0">
+            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}"
+                value="{{ effective_skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
+                onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)" tabindex="0">
             <span class="adjustment-buttons">
                 <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
                 <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
@@ -673,6 +669,7 @@
 </div>
 
 <script>
+    const RANK_BONUS = {{ rank_bonus }};
     let timeout;
 
     function changeSkillValue(skillId, delta) {
