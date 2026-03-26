@@ -1,19 +1,21 @@
+<!-- web/templates/plan_only.html -->
+<h2>План тренировок</h2>
 {% if plan %}
-<button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
 <div>
     {% for item in plan %}
     <div class="recommendation-item {{ item.type }}">
         <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
-        <p><em>Качает навыки:</em> 
-        {% if item.skills %}
+        <p><em>Качает навыки:</em>
+            {% if item.skills %}
             {% for skill in item.skills %}
-                {{ skill_names[skill] }}{% if not loop.last %}, {% endif %}
+            <span class="{% if skill in white_skills %}white-skill-in-plan{% else %}gray-skill-in-plan{% endif %}">
+                {{ skill_names[skill] }}
+            </span>{% if not loop.last %}, {% endif %}
             {% endfor %}
-        {% else %}
+            {% else %}
             Нет указанных навыков
-        {% endif %}
+            {% endif %}
         </p>
-        <button type="button" class="accept-btn" onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять тренировку</button>
     </div>
     {% endfor %}
 </div>

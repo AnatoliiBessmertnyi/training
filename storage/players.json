@@ -9,49 +9,50 @@
         "AMC"
       ],
       "skills": {
-        "tackling": 139,
-        "marking": 137,
-        "positioning": 141,
-        "heading": 148,
-        "bravery": 145,
-        "passing": 151,
-        "dribbling": 143,
-        "cross": 52,
-        "shooting": 148,
-        "finishing": 154,
-        "physical": 146,
-        "strength": 135,
-        "aggressiveness": 131,
-        "pace": 154,
-        "creativity": 129
+        "tackling": 165,
+        "marking": 174,
+        "positioning": 185,
+        "heading": 184,
+        "bravery": 181,
+        "passing": 175,
+        "dribbling": 180,
+        "cross": 20,
+        "shooting": 182,
+        "finishing": 212,
+        "physical": 170,
+        "strength": 150,
+        "aggressiveness": 150,
+        "pace": 172,
+        "creativity": 149
       },
-      "training_count": 10
+      "training_count": 15
     },
     {
       "id": "a4daad44-f18a-4121-bfda-a3ed61af7fab",
       "name": "Mustafaev",
       "positions": [
+        "MC",
         "AMC",
         "ST"
       ],
       "skills": {
-        "tackling": 18,
-        "marking": 26,
-        "positioning": 240,
-        "heading": 239,
-        "bravery": 15,
-        "passing": 275,
-        "dribbling": 275,
-        "cross": 23,
-        "shooting": 290,
-        "finishing": 313,
-        "physical": 220,
-        "strength": 218,
+        "tackling": 104,
+        "marking": 114,
+        "positioning": 242,
+        "heading": 221,
+        "bravery": 104,
+        "passing": 250,
+        "dribbling": 264,
+        "cross": 1,
+        "shooting": 296,
+        "finishing": 321,
+        "physical": 203,
+        "strength": 192,
         "aggressiveness": 1,
-        "pace": 274,
-        "creativity": 222
+        "pace": 237,
+        "creativity": 204
       },
-      "training_count": 15
+      "training_count": 20
     },
     {
       "id": "d4891646-4a95-4d56-9004-4d3323d5fd0d",
@@ -60,23 +61,23 @@
         "DC"
       ],
       "skills": {
-        "tackling": 219,
-        "marking": 193,
-        "positioning": 186,
-        "heading": 161,
-        "bravery": 200,
-        "passing": 35,
-        "dribbling": 17,
-        "cross": 23,
-        "shooting": 34,
-        "finishing": 27,
-        "physical": 158,
-        "strength": 140,
-        "aggressiveness": 152,
+        "tackling": 202,
+        "marking": 189,
+        "positioning": 181,
+        "heading": 165,
+        "bravery": 191,
+        "passing": 6,
+        "dribbling": 1,
+        "cross": 1,
+        "shooting": 5,
+        "finishing": 1,
+        "physical": 190,
+        "strength": 146,
+        "aggressiveness": 145,
         "pace": 1,
         "creativity": 1
       },
-      "training_count": 10
+      "training_count": 20
     },
     {
       "id": "8b73ec74-fdab-4e6d-803d-ff2e6b474e39",
@@ -85,23 +86,23 @@
         "MC"
       ],
       "skills": {
-        "tackling": 176,
-        "marking": 176,
-        "positioning": 183,
-        "heading": 31,
-        "bravery": 189,
-        "passing": 181,
-        "dribbling": 175,
-        "cross": 15,
-        "shooting": 172,
-        "finishing": 16,
-        "physical": 169,
+        "tackling": 162,
+        "marking": 159,
+        "positioning": 185,
+        "heading": 6,
+        "bravery": 185,
+        "passing": 175,
+        "dribbling": 171,
+        "cross": 1,
+        "shooting": 160,
+        "finishing": 1,
+        "physical": 154,
         "strength": 1,
-        "aggressiveness": 23,
-        "pace": 218,
-        "creativity": 133
+        "aggressiveness": 1,
+        "pace": 183,
+        "creativity": 130
       },
-      "training_count": 9
+      "training_count": 15
     },
     {
       "id": "d55fed36-db09-4e48-a9e9-523d70f612a5",
@@ -110,73 +111,77 @@
         "MC"
       ],
       "skills": {
-        "tackling": 144,
-        "marking": 158,
-        "positioning": 249,
-        "heading": 13,
-        "bravery": 264,
-        "passing": 241,
-        "dribbling": 250,
-        "cross": 17,
-        "shooting": 205,
+        "tackling": 153,
+        "marking": 153,
+        "positioning": 246,
+        "heading": 1,
+        "bravery": 254,
+        "passing": 248,
+        "dribbling": 245,
+        "cross": 1,
+        "shooting": 187,
         "finishing": 1,
-        "physical": 191,
+        "physical": 173,
         "strength": 1,
         "aggressiveness": 1,
-        "pace": 248,
-        "creativity": 177
+        "pace": 215,
+        "creativity": 153
       },
-      "training_count": 6
+      "training_count": 20
     },
     {
       "id": "b8f6f42c-db76-4564-b948-608e5c7eec02",
-      "name": "Andre da Cruz Oliveira",
+      "name": "Darren McLean",
       "positions": [
-        "AML"
+        "ML",
+        "MC",
+        "DMC"
       ],
       "skills": {
-        "positioning": 63,
-        "heading": 20,
-        "bravery": 6,
-        "passing": 252,
-        "dribbling": 222,
-        "cross": 225,
-        "shooting": 161,
-        "finishing": 192,
-        "physical": 139,
-        "pace": 165,
-        "creativity": 125,
-        "tackling": 1,
-        "marking": 1,
-        "strength": 1,
-        "aggressiveness": 1
+        "positioning": 172,
+        "heading": 171,
+        "bravery": 175,
+        "passing": 176,
+        "dribbling": 168,
+        "cross": 171,
+        "shooting": 149,
+        "finishing": 53,
+        "physical": 167,
+        "pace": 175,
+        "creativity": 154,
+        "tackling": 155,
+        "marking": 179,
+        "strength": 158,
+        "aggressiveness": 152
       },
-      "training_count": 10
+      "training_count": 20
     },
     {
       "id": "d620ba74-bca3-4371-83c9-5747f15857c8",
-      "name": "Ivan Puzan",
+      "name": "Alexandr Nazarenko",
       "positions": [
-        "AMR"
+        "MR",
+        "MC",
+        "DMC"
       ],
       "skills": {
-        "tackling": 41,
-        "marking": 43,
-        "positioning": 49,
-        "heading": 61,
-        "bravery": 40,
-        "passing": 223,
-        "dribbling": 187,
-        "cross": 159,
-        "shooting": 159,
-        "finishing": 161,
-        "physical": 134,
-        "strength": 4,
-        "aggressiveness": 16,
-        "pace": 179,
-        "creativity": 123
+        "tackling": 105,
+        "marking": 106,
+        "positioning": 123,
+        "heading": 104,
+        "bravery": 105,
+        "passing": 137,
+        "dribbling": 117,
+        "cross": 118,
+        "shooting": 103,
+        "finishing": 42,
+        "physical": 137,
+        "strength": 112,
+        "aggressiveness": 102,
+        "pace": 126,
+        "creativity": 116
       },
-      "training_count": 15
+      "training_count": 20
     },
     {
       "id": "e5dd407f-8b7b-4bcd-bdd2-d5c4988700b4",
@@ -186,23 +191,23 @@
         "MC"
       ],
       "skills": {
-        "tackling": 158,
-        "marking": 179,
-        "positioning": 213,
-        "heading": 147,
-        "bravery": 156,
-        "passing": 203,
-        "dribbling": 142,
-        "cross": 43,
-        "shooting": 137,
-        "finishing": 43,
-        "physical": 183,
-        "strength": 145,
-        "aggressiveness": 151,
-        "pace": 168,
-        "creativity": 147
+        "tackling": 150,
+        "marking": 174,
+        "positioning": 200,
+        "heading": 168,
+        "bravery": 160,
+        "passing": 194,
+        "dribbling": 169,
+        "cross": 11,
+        "shooting": 158,
+        "finishing": 19,
+        "physical": 167,
+        "strength": 156,
+        "aggressiveness": 152,
+        "pace": 162,
+        "creativity": 149
       },
-      "training_count": 15
+      "training_count": 20
     },
     {
       "id": "7e0ef944-b67c-481d-acec-1fd5e3465b51",
@@ -211,48 +216,77 @@
         "DC"
       ],
       "skills": {
-        "tackling": 159,
-        "marking": 168,
-        "positioning": 174,
+        "tackling": 165,
+        "marking": 171,
+        "positioning": 177,
         "heading": 151,
-        "bravery": 170,
-        "passing": 79,
-        "dribbling": 82,
-        "cross": 78,
-        "shooting": 83,
-        "finishing": 70,
+        "bravery": 172,
+        "passing": 55,
+        "dribbling": 58,
+        "cross": 53,
+        "shooting": 59,
+        "finishing": 46,
         "physical": 170,
-        "strength": 150,
-        "aggressiveness": 185,
-        "pace": 70,
-        "creativity": 81
+        "strength": 142,
+        "aggressiveness": 163,
+        "pace": 30,
+        "creativity": 41
       },
-      "training_count": 15
+      "training_count": 13
     },
     {
       "id": "c1349fb0-8303-45d2-a6b3-b8c91283829c",
-      "name": "Evgeny Golyshev",
+      "name": "Alexandr Adamov",
       "positions": [
-        "DC"
+        "DC",
+        "DL",
+        "ML"
       ],
       "skills": {
-        "tackling": 150,
-        "marking": 149,
-        "positioning": 154,
-        "heading": 159,
-        "bravery": 161,
-        "passing": 84,
-        "dribbling": 102,
-        "cross": 97,
-        "shooting": 88,
-        "finishing": 88,
-        "physical": 134,
-        "strength": 133,
-        "aggressiveness": 137,
-        "pace": 71,
-        "creativity": 69
+        "tackling": 137,
+        "marking": 147,
+        "positioning": 129,
+        "heading": 124,
+        "bravery": 146,
+        "passing": 140,
+        "dribbling": 129,
+        "cross": 123,
+        "shooting": 58,
+        "finishing": 70,
+        "physical": 150,
+        "strength": 121,
+        "aggressiveness": 146,
+        "pace": 130,
+        "creativity": 144
       },
-      "training_count": 10
+      "training_count": 30
+    },
+    {
+      "id": "5ee1c311-c02d-4be1-b7d4-80778b52349b",
+      "name": "Alexandr Chichkin",
+      "positions": [
+        "AMC",
+        "MC",
+        "DMC"
+      ],
+      "skills": {
+        "tackling": 130,
+        "marking": 136,
+        "positioning": 155,
+        "heading": 109,
+        "bravery": 121,
+        "passing": 136,
+        "dribbling": 127,
+        "cross": 101,
+        "shooting": 121,
+        "finishing": 111,
+        "physical": 139,
+        "strength": 126,
+        "aggressiveness": 98,
+        "pace": 131,
+        "creativity": 118
+      },
+      "training_count": 20
     }
   ]
 }

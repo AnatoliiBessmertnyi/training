@@ -211,13 +211,13 @@
     }
 
     .white-skill-in-plan {
-    color: var(--accent-green);
-    font-weight: 600;
+        color: var(--accent-green);
+        font-weight: 600;
     }
 
     .gray-skill-in-plan {
-    color: #a0aec0;
-    opacity: 0.85;
+        color: #a0aec0;
+        opacity: 0.85;
     }
 
     .mass-adjustment {
@@ -278,33 +278,6 @@
 
     .recommendation-item strong {
         color: var(--text-primary);
-    }
-
-    .accept-btn,
-    .accept-all-btn {
-        padding: 6px 12px;
-        background: var(--accent-green);
-        color: var(--text-primary);
-        border: 1px solid var(--border-color);
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 0.9rem;
-        margin-top: 5px;
-    }
-
-    .accept-btn:hover,
-    .accept-all-btn:hover {
-        background: #059669;
-    }
-
-    .accept-all-btn {
-        background: var(--accent-blue);
-        padding: 10px 20px;
-        font-size: 1rem;
-    }
-
-    .accept-all-btn:hover {
-        background: #2563eb;
     }
 
     .btn {
@@ -401,9 +374,8 @@
             </div>
         </div>
 
-        <!-- Stats card for averages after accepting all trainings -->
         <div class="stats-card" id="after-training-averages">
-            <h3>Средние значения навыков после принятия всех тренировок</h3>
+            <h3>Средние значения навыков после выполнения всех тренировок</h3>
             <div class="stat-item">
                 <span class="stat-label">Все навыки:</span>
                 <span class="stat-value" id="after-all-skills-avg">{{ "%.2f"|format(after_all_skills_avg) }}</span>
@@ -424,133 +396,133 @@
         </div>
 
         <div class="highlights">
-        <h3>Слабые и сильные навыки</h3>
-        <div style="display: flex; gap: 2rem; margin-top: 10px;">
-            <!-- Сильные (зелёный, мягкий фон) -->
-            <div style="flex: 1; background: rgba(40, 60, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
-            <div style="font-weight: 650; color: var(--accent-green); margin-bottom: 8px;">Сильные навыки</div>
-            {% if player.skills %}
-                {% set ns = namespace(white_list=[]) %}
-                {% for skill_id in white_skills %}
-                {% if skill_id in player.skills %}
+            <h3>Слабые и сильные навыки</h3>
+            <div style="display: flex; gap: 2rem; margin-top: 10px;">
+                <!-- Сильные (зелёный, мягкий фон) -->
+                <div
+                    style="flex: 1; background: rgba(40, 60, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
+                    <div style="font-weight: 650; color: var(--accent-green); margin-bottom: 8px;">Сильные навыки</div>
+                    {% if player.skills %}
+                    {% set ns = namespace(white_list=[]) %}
+                    {% for skill_id in white_skills %}
+                    {% if skill_id in player.skills %}
                     {% set _ = ns.white_list.append((skill_id, player.skills[skill_id])) %}
+                    {% endif %}
+                    {% endfor %}
+                    {% set sorted_strong = ns.white_list|sort(attribute='1', reverse=true) %}
+                    {% for skill_id, value in sorted_strong %}
+                    {% if loop.index0 < 3 %} <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }}
+                        <span style="color: var(--accent-green);">({{ value }})</span>
+                </div>
                 {% endif %}
                 {% endfor %}
-                {% set sorted_strong = ns.white_list|sort(attribute='1', reverse=true) %}
-                {% for skill_id, value in sorted_strong %}
-                {% if loop.index0 < 3 %}
-                    <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }} <span style="color: var(--accent-green);">({{ value }})</span></div>
                 {% endif %}
-                {% endfor %}
-            {% endif %}
             </div>
 
-             <!-- Слабые (красный, мягкий фон) -->
-            <div style="flex: 1; background: rgba(60, 40, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
-            <div style="font-weight: 650; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
-            {% if player.skills %}
+            <!-- Слабые (красный, мягкий фон) -->
+            <div
+                style="flex: 1; background: rgba(60, 40, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
+                <div style="font-weight: 650; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
+                {% if player.skills %}
                 {% set ns2 = namespace(white_list=[]) %}
                 {% for skill_id in white_skills %}
                 {% if skill_id in player.skills %}
-                    {% set _ = ns2.white_list.append((skill_id, player.skills[skill_id])) %}
+                {% set _ = ns2.white_list.append((skill_id, player.skills[skill_id])) %}
                 {% endif %}
                 {% endfor %}
                 {% set sorted_weak = ns2.white_list|sort(attribute='1') %}
                 {% for skill_id, value in sorted_weak %}
-                {% if loop.index0 < 3 %}
-                    <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }} <span style="color: var(--accent-red);">({{ value }})</span></div>
-                {% endif %}
-                {% endfor %}
-            {% endif %}
-            </div>
-        </div>
-        </div>
-    </div>
-
-    <div class="col-skills">
-        <h2>Навыки</h2>
-
-        <div id="skills-form">
-            <!-- Display all skills in the defined order from SKILLS config -->
-            {% for skill_id in skill_names.keys() %}
-            {% if skill_id in white_skills %}
-            <div class="skill-input">
-                <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-                <input type="number" id="{{ skill_id }}" name="{{ skill_id }}"
-                    value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
-                    onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)" tabindex="0">
-                <!-- Явно указываем, что можно фокусироваться -->
-                <span class="adjustment-buttons">
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
-                </span>
-            </div>
-            {% else %}
-            <div class="skill-input gray-skill">
-                <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
-                <input type="number" id="{{ skill_id }}" name="{{ skill_id }}"
-                    value="{{ player.skills.get(skill_id, 1) }}" min="1" max="1000" step="1"
-                    onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)" tabindex="0">
-                <span class="adjustment-buttons">
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
-                    <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
-                </span>
+                {% if loop.index0 < 3 %} <div style="margin: 4px 0; font-weight: 500;">{{ skill_names[skill_id] }} <span
+                        style="color: var(--accent-red);">({{ value }})</span>
             </div>
             {% endif %}
             {% endfor %}
-
+            {% endif %}
         </div>
+    </div>
+</div>
+</div>
 
-        <div style="margin-top: 20px;">
-            <label for="training_count"><strong>Количество тренировок:</strong></label>
-            <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}"
-                min="1" max="100"
-                style="width: 80px; margin-left: 10px; -moz-appearance: textfield; appearance: none; -webkit-appearance: none;"
-                onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 46;"
-                oninput="this.style.outline = 'none';">
-            <button type="button" class="btn" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
+<div class="col-skills">
+    <h2>Навыки</h2>
+
+    <div id="skills-form">
+        <!-- Display all skills in the defined order from SKILLS config -->
+        {% for skill_id in skill_names.keys() %}
+        {% if skill_id in white_skills %}
+        <div class="skill-input">
+            <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
+            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" value="{{ player.skills.get(skill_id, 1) }}"
+                min="1" max="1000" step="1" onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
+                tabindex="0">
+            <!-- Явно указываем, что можно фокусироваться -->
+            <span class="adjustment-buttons">
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
+            </span>
         </div>
+        {% else %}
+        <div class="skill-input gray-skill">
+            <label for="{{ skill_id }}">{{ skill_names[skill_id] }}:</label>
+            <input type="number" id="{{ skill_id }}" name="{{ skill_id }}" value="{{ player.skills.get(skill_id, 1) }}"
+                min="1" max="1000" step="1" onchange="saveSkillAndRefreshPlan('{{ skill_id }}', this.value)"
+                tabindex="0">
+            <span class="adjustment-buttons">
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', -1)" tabindex="-1">-1</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', -5)" tabindex="-1">-5</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', -10)" tabindex="-1">-10</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', 1)" tabindex="-1">+1</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', 5)" tabindex="-1">+5</button>
+                <button type="button" onclick="changeSkillValue('{{ skill_id }}', 10)" tabindex="-1">+10</button>
+            </span>
+        </div>
+        {% endif %}
+        {% endfor %}
 
-        <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
     </div>
 
-    <div class="col-plan" id="plan-container">
-        <h2>План тренировок</h2>
-        {% if plan %}
-        <button type="button" class="accept-all-btn" onclick="acceptAllTrainings()">Принять все тренировки</button>
-        <div>
-            {% for item in plan %}
-            <div class="recommendation-item {{ item.type }}">
-                <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
-                <p><em>Качает навыки:</em>
+    <div style="margin-top: 20px;">
+        <label for="training_count"><strong>Количество тренировок:</strong></label>
+        <input type="number" id="training_count" name="training_count" value="{{ player.training_count or 10 }}" min="1"
+            max="100"
+            style="width: 80px; margin-left: 10px; -moz-appearance: textfield; appearance: none; -webkit-appearance: none;"
+            onkeydown="return (event.keyCode >= 48 && event.keyCode <= 57) || (event.keyCode >= 96 && event.keyCode <= 105) || event.keyCode === 8 || event.keyCode === 9 || event.keyCode === 37 || event.keyCode === 39 || event.keyCode === 46;"
+            oninput="this.style.outline = 'none';">
+        <button type="button" class="btn" onclick="refreshPlan()" style="margin-left: 10px;">Обновить план</button>
+    </div>
+
+    <a href="{{ url_for('players') }}" class="btn">Назад к списку игроков</a>
+</div>
+
+<div class="col-plan" id="plan-container">
+    <h2>План тренировок</h2>
+    {% if plan %}
+    <div>
+        {% for item in plan %}
+        <div class="recommendation-item {{ item.type }}">
+            <p><strong>{{ item.name }}</strong> ({{ item.repeats }} раз)</p>
+            <p><em>Качает навыки:</em>
                 {% if item.skills %}
                 {% for skill in item.skills %}
-                    <span class="{% if skill in white_skills %}white-skill-in-plan{% else %}gray-skill-in-plan{% endif %}">
+                <span class="{% if skill in white_skills %}white-skill-in-plan{% else %}gray-skill-in-plan{% endif %}">
                     {{ skill_names[skill] }}
-                    </span>{% if not loop.last %}, {% endif %}
+                </span>{% if not loop.last %}, {% endif %}
                 {% endfor %}
                 {% else %}
                 Нет указанных навыков
                 {% endif %}
-                </p>
-                <button type="button" class="accept-btn"
-                    onclick="event.preventDefault(); acceptTraining('{{ item.training_id }}', {{ item.repeats }});">Принять
-                    тренировку</button>
-            </div>
-            {% endfor %}
+            </p>
         </div>
-        {% else %}
-        <p>Нет подходящих тренировок для балансировки навыков.</p>
-        {% endif %}
+        {% endfor %}
     </div>
+    {% else %}
+    <p>Нет подходящих тренировок для балансировки навыков.</p>
+    {% endif %}
+</div>
 </div>
 
 <script>
@@ -583,17 +555,17 @@
                 // Обновляем новые колонки "сильные / слабые"
                 const highlightsContainer = document.querySelector('.highlights');
                 if (highlightsContainer && data.weakest_skills && data.strongest_skills) {
-                let weakHtml = '';
-                data.weakest_skills.forEach(s => {
-                    weakHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-red);">(${s.value})</span></div>`;
-                });
+                    let weakHtml = '';
+                    data.weakest_skills.forEach(s => {
+                        weakHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-red);">(${s.value})</span></div>`;
+                    });
 
-                let strongHtml = '';
-                data.strongest_skills.forEach(s => {
-                    strongHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-green);">(${s.value})</span></div>`;
-                });
+                    let strongHtml = '';
+                    data.strongest_skills.forEach(s => {
+                        strongHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-green);">(${s.value})</span></div>`;
+                    });
 
-                highlightsContainer.innerHTML = `
+                    highlightsContainer.innerHTML = `
                     <h3>Слабые и сильные навыки</h3>
                     <div style="display: flex; gap: 2rem; margin-top: 10px;">
                     <div style="flex: 1; background: rgba(72, 187, 120, 0.15); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
@@ -697,160 +669,6 @@
                 }
             })
             .catch(error => console.error('Ошибка:', error));
-    }
-
-    // Function to accept a specific training
-    function acceptTraining(trainingId, repeats) {
-        fetch('/players/{{ player_id }}/accept_training', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `training_id=${encodeURIComponent(trainingId)}&repeats=${encodeURIComponent(repeats)}`
-        })
-            .then(response => {
-                if (response.ok) {
-                    // Find the training item to get affected skills
-                    const trainingElement = Array.from(document.querySelectorAll('.recommendation-item'))
-                        .find(item => item.innerHTML.includes(trainingId));
-
-                    if (trainingElement) {
-                        // Extract skill names from the training description
-                        const skillsText = trainingElement.querySelector('em')?.nextSibling?.textContent || '';
-                        // Parse the skills list - looking for patterns like "skill1, skill2, skill3"
-                        const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
-                        let match;
-                        const affectedSkillNames = [];
-
-                        while ((match = skillPattern.exec(skillsText)) !== null) {
-                            let skillName = match[1].trim();
-                            if (skillName) {
-                                affectedSkillNames.push(skillName);
-                            }
-                        }
-
-                        // Add highlight animation to the affected skill inputs
-                        affectedSkillNames.forEach(skillName => {
-                            // Find the skill input by matching the label text (skill name)
-                            const allLabels = document.querySelectorAll('label');
-                            allLabels.forEach(label => {
-                                if (label.textContent.trim().includes(skillName)) {
-                                    // Find the corresponding input
-                                    const inputId = label.getAttribute('for');
-                                    const inputElement = document.getElementById(inputId);
-                                    if (inputElement) {
-                                        const container = inputElement.closest('.skill-input');
-                                        if (container) {
-                                            // Add highlight effect
-                                            container.style.backgroundColor = '#3B82F6'; // yellow highlight
-                                            setTimeout(() => {
-                                                // Smooth transition back to original color
-                                                container.style.transition = 'none';
-                                                container.style.backgroundColor = '';
-
-                                                // Also handle gray-skill styling if needed
-                                                if (container.classList.contains('gray-skill')) {
-                                                    container.style.backgroundColor = '#f0f0f0';
-                                                }
-
-                                                // Remove transition property after animation completes
-                                                setTimeout(() => {
-                                                    if (container) {
-                                                        container.style.transition = '';
-                                                    }
-                                                }, 1500);
-                                            }, 100); // Small delay to ensure highlight is visible
-                                        }
-                                    }
-                                }
-                            });
-                        });
-                    }
-
-                    // Refresh the page to show updated skills and plan after a short delay
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1600); // Wait for the highlight animation before reload
-                } else {
-                    console.error('Error accepting training');
-                }
-            })
-            .catch(error => console.error('Error:', error));
-    }
-
-    // Function to accept all trainings
-    function acceptAllTrainings() {
-        // Get all training elements to find affected skills
-        const allTrainingElements = document.querySelectorAll('.recommendation-item');
-        const allAffectedSkillNames = [];
-
-        allTrainingElements.forEach(element => {
-            const skillsText = element.querySelector('em')?.nextSibling?.textContent || '';
-            const skillPattern = /([^,()]+(?:\([^)]*\))?[^,]*)/g;
-            let match;
-
-            while ((match = skillPattern.exec(skillsText)) !== null) {
-                let skillName = match[1].trim();
-                if (skillName) {
-                    allAffectedSkillNames.push(skillName);
-                }
-            }
-        });
-        fetch('/players/{{ player_id }}/accept_all_trainings', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: ''
-        })
-            .then(response => {
-                if (response.ok) {
-                    // Add highlight animation to all affected skill inputs
-                    allAffectedSkillNames.forEach(skillName => {
-                        // Find the skill input by matching the label text (skill name)
-                        const allLabels = document.querySelectorAll('label');
-                        allLabels.forEach(label => {
-                            if (label.textContent.trim().includes(skillName)) {
-                                // Find the corresponding input
-                                const inputId = label.getAttribute('for');
-                                const inputElement = document.getElementById(inputId);
-                                if (inputElement) {
-                                    const container = inputElement.closest('.skill-input');
-                                    if (container) {
-                                        // Add highlight effect
-                                        container.style.backgroundColor = '#3B82F6'; // yellow highlight
-                                        setTimeout(() => {
-                                            // Smooth transition back to original color
-                                            container.style.transition = 'none';
-                                            container.style.backgroundColor = '';
-
-                                            // Also handle gray-skill styling if needed
-                                            if (container.classList.contains('gray-skill')) {
-                                                container.style.backgroundColor = '#f0f0f0';
-                                            }
-
-                                            // Remove transition property after animation completes
-                                            setTimeout(() => {
-                                                if (container) {
-                                                    container.style.transition = '';
-                                                }
-                                            }, 1500);
-                                        }, 100); // Small delay to ensure highlight is visible
-                                    }
-                                }
-                            }
-                        });
-                    });
-
-                    // Refresh the page to show updated skills and plan after a short delay
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1600); // Wait for the highlight animation before reload
-                } else {
-                    console.error('Error accepting all trainings');
-                }
-            })
-            .catch(error => console.error('Error:', error));
     }
 </script>
 {% endblock %}
