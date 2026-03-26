@@ -25,7 +25,8 @@
         "pace": 172,
         "creativity": 149
       },
-      "training_count": 15
+      "training_count": 15,
+      "rank": 0
     },
     {
       "id": "a4daad44-f18a-4121-bfda-a3ed61af7fab",
@@ -52,7 +53,8 @@
         "pace": 237,
         "creativity": 204
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     },
     {
       "id": "d4891646-4a95-4d56-9004-4d3323d5fd0d",
@@ -77,7 +79,8 @@
         "pace": 1,
         "creativity": 1
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     },
     {
       "id": "8b73ec74-fdab-4e6d-803d-ff2e6b474e39",
@@ -102,7 +105,8 @@
         "pace": 183,
         "creativity": 130
       },
-      "training_count": 15
+      "training_count": 15,
+      "rank": 0
     },
     {
       "id": "d55fed36-db09-4e48-a9e9-523d70f612a5",
@@ -127,7 +131,8 @@
         "pace": 215,
         "creativity": 153
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     },
     {
       "id": "b8f6f42c-db76-4564-b948-608e5c7eec02",
@@ -154,7 +159,8 @@
         "strength": 158,
         "aggressiveness": 152
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     },
     {
       "id": "d620ba74-bca3-4371-83c9-5747f15857c8",
@@ -181,7 +187,8 @@
         "pace": 126,
         "creativity": 116
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     },
     {
       "id": "e5dd407f-8b7b-4bcd-bdd2-d5c4988700b4",
@@ -207,7 +214,8 @@
         "pace": 162,
         "creativity": 149
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     },
     {
       "id": "7e0ef944-b67c-481d-acec-1fd5e3465b51",
@@ -232,7 +240,8 @@
         "pace": 30,
         "creativity": 41
       },
-      "training_count": 13
+      "training_count": 13,
+      "rank": 0
     },
     {
       "id": "c1349fb0-8303-45d2-a6b3-b8c91283829c",
@@ -259,7 +268,8 @@
         "pace": 130,
         "creativity": 144
       },
-      "training_count": 30
+      "training_count": 30,
+      "rank": 0
     },
     {
       "id": "5ee1c311-c02d-4be1-b7d4-80778b52349b",
@@ -286,7 +296,8 @@
         "pace": 131,
         "creativity": 118
       },
-      "training_count": 20
+      "training_count": 20,
+      "rank": 0
     }
   ]
 }

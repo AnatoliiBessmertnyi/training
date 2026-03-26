@@ -61,7 +61,32 @@ def new_player():
         repo.create(name, positions)
         return redirect(url_for("players"))
 
-    return render_template("player_form.html", positions=POSITIONS.keys())
+    return render_template("player_form.html", positions=POSITIONS.keys(), player=None)
+
+
+@app.route("/players/<player_id>/edit", methods=["GET", "POST"])
+def edit_player(player_id):
+    player_data = repo.get(player_id)
+    if player_data is None:
+        return "Player not found", 404
+
+    if request.method == "POST":
+        # Обновляем основные данные
+        player_data["name"] = request.form["name"]
+        player_data["positions"] = request.form.getlist("positions")
+
+        # Обновляем ранг (преобразуем в int)
+        try:
+            player_data["rank"] = int(request.form.get("rank", 0))
+        except ValueError:
+            player_data["rank"] = 0
+
+        repo.update(player_data)
+        return redirect(url_for("players"))
+
+    return render_template(
+        "player_form.html", player=player_data, positions=POSITIONS.keys()
+    )
 
 
 @app.route("/players/<player_id>", methods=["GET", "POST"])

@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Добавить игрока - Тренеровочный планер{% endblock %}
+{% block title %}{{ "Изменить игрока" if player else "Добавить игрока" }} - Тренеровочный планер{% endblock %}
 
 {% block content %}
-<h1>Добавить нового игрока</h1>
+<h1>{{ "Изменить игрока" if player else "Добавить нового игрока" }}</h1>
 
 <form method="POST">
     <div class="form-group">
         <label for="name">Имя игрока:</label>
-        <input type="text" id="name" name="name" required>
+        <input type="text" id="name" name="name" value="{{ player.name if player else '' }}" required>
     </div>
 
     <div class="form-group">
@@ -16,14 +16,24 @@
         {% for position_id in positions %}
         <div>
             <label>
-                <input type="checkbox" name="positions" value="{{ position_id }}"> 
+                <input type="checkbox" name="positions" value="{{ position_id }}" {% if player and position_id in
+                    player.positions %}checked{% endif %}>
                 {{ position_id }}
             </label>
         </div>
         {% endfor %}
     </div>
 
-    <button type="submit" class="btn">Создать игрока</button>
+    <div class="form-group">
+        <label for="rank">Ранг:</label>
+        <select id="rank" name="rank">
+            {% for i in range(7) %}
+            <option value="{{ i }}" {% if player and player.rank==i %}selected{% endif %}>{{ i }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <button type="submit" class="btn">{{ "Сохранить изменения" if player else "Создать игрока" }}</button>
     <a href="{{ url_for('players') }}" class="btn btn-danger">Отмена</a>
 </form>
 {% endblock %}
