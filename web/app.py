@@ -263,7 +263,7 @@ def update_skills_and_get_data(player_id):
     ]
     sorted_white_skills = sorted(white_skill_items, key=lambda x: x[1])
     weakest = sorted_white_skills[:3]
-    strongest = sorted_white_skills[-3:]
+    strongest = list(reversed(sorted_white_skills[-3:]))
 
     all_vals = list(player_data["skills"].values())
     all_avg = sum(all_vals) / len(all_vals) if all_vals else 0

@@ -559,25 +559,25 @@
                     data.weakest_skills.forEach(s => {
                         weakHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-red);">(${s.value})</span></div>`;
                     });
-
                     let strongHtml = '';
                     data.strongest_skills.forEach(s => {
                         strongHtml += `<div style="margin: 4px 0; font-weight: 500;">${s.name} <span style="color: var(--accent-green);">(${s.value})</span></div>`;
                     });
-
                     highlightsContainer.innerHTML = `
-                    <h3>Слабые и сильные навыки</h3>
-                    <div style="display: flex; gap: 2rem; margin-top: 10px;">
-                    <div style="flex: 1; background: rgba(72, 187, 120, 0.15); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
-                        <div style="font-weight: 600; color: var(--accent-green); margin-bottom: 8px;">Сильные навыки</div>
-                        ${strongHtml}
-                    </div>
-                    <div style="flex: 1; background: rgba(239, 68, 68, 0.15); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
-                        <div style="font-weight: 600; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
-                        ${weakHtml}
-                    </div>
-                    </div>
-                `;
+                        <h3>Слабые и сильные навыки</h3>
+                        <div style="display: flex; gap: 2rem; margin-top: 10px;">
+                            <!-- Сильные (зелёный, мягкий фон) - ИСПРАВЛЕНО -->
+                            <div style="flex: 1; background: rgba(40, 60, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-green);">
+                                <div style="font-weight: 650; color: var(--accent-green); margin-bottom: 8px;">Сильные навыки</div>
+                                ${strongHtml}
+                            </div>
+                            <!-- Слабые (красный, мягкий фон) - ИСПРАВЛЕНО -->
+                            <div style="flex: 1; background: rgba(60, 40, 40, 0.3); padding: 12px; border-radius: 6px; border-left: 3px solid var(--accent-red);">
+                                <div style="font-weight: 650; color: var(--accent-red); margin-bottom: 8px;">Слабые навыки</div>
+                                ${weakHtml}
+                            </div>
+                        </div>
+                    `;
                 }
 
                 // Обновляем текущие средние значения
