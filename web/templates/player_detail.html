@@ -295,12 +295,159 @@
     .btn:hover {
         background: #2563eb;
     }
+
+    /* === RANK BADGE (универсальный) === */
+    .rank-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+        z-index: 1;
+    }
+
+    .player-info {
+        position: relative;
+        /* Для позиционирования бейджа */
+        background: var(--bg-tertiary);
+        padding: 1rem;
+        border-radius: 8px;
+        border-left: 4px solid var(--accent-blue);
+        transition: background 0.3s ease, border-left-color 0.3s ease;
+    }
+
+    /* === RANK STYLES для player-info === */
+
+    /* Rank 0 - Default */
+    .player-info.rank-0 {
+        background: var(--bg-tertiary);
+        border-left-color: var(--accent-blue);
+    }
+
+    .player-info.rank-0 .rank-badge {
+        background: rgba(0, 0, 0, 0.3);
+        color: #fff;
+    }
+
+    /* Rank 1 - Golden/Honey */
+    .player-info.rank-1 {
+        background: linear-gradient(135deg, #ffd700 0%, #ffb347 50%, #ffcc33 100%);
+        border-left-color: #ff8c00;
+    }
+
+    .player-info.rank-1 h1,
+    .player-info.rank-1 p,
+    .player-info.rank-1 strong {
+        color: #1a1a1a;
+    }
+
+    .player-info.rank-1 .rank-badge {
+        background: rgba(26, 26, 26, 0.4);
+        color: #fff;
+        text-shadow: none;
+    }
+
+    /* Rank 2 - Summer Grass Green */
+    .player-info.rank-2 {
+        background: linear-gradient(135deg, #7cb342 0%, #558b2f 50%, #689f38 100%);
+        border-left-color: #33691e;
+    }
+
+    .player-info.rank-2 h1,
+    .player-info.rank-2 p,
+    .player-info.rank-2 strong {
+        color: #0d2600;
+    }
+
+    .player-info.rank-2 .rank-badge {
+        background: rgba(13, 38, 0, 0.4);
+        color: #fff;
+        text-shadow: none;
+    }
+
+    /* Rank 3 - Aegean/Aquamarine */
+    .player-info.rank-3 {
+        background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 50%, #00acc1 100%);
+        border-left-color: #00838f;
+    }
+
+    .player-info.rank-3 h1,
+    .player-info.rank-3 p,
+    .player-info.rank-3 strong {
+        color: #002629;
+    }
+
+    .player-info.rank-3 .rank-badge {
+        background: rgba(0, 38, 41, 0.4);
+        color: #fff;
+        text-shadow: none;
+    }
+
+    /* Rank 4 - Sunset Sea/Blue */
+    .player-info.rank-4 {
+        background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 50%, #1565c0 100%);
+        border-left-color: #0d47a1;
+    }
+
+    .player-info.rank-4 h1,
+    .player-info.rank-4 p,
+    .player-info.rank-4 strong {
+        color: #051533;
+    }
+
+    .player-info.rank-4 .rank-badge {
+        background: rgba(5, 21, 51, 0.4);
+        color: #fff;
+        text-shadow: none;
+    }
+
+    /* Rank 5 - Purple */
+    .player-info.rank-5 {
+        background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 50%, #6a1b9a 100%);
+        border-left-color: #4a148c;
+    }
+
+    .player-info.rank-5 h1,
+    .player-info.rank-5 p,
+    .player-info.rank-5 strong {
+        color: #1a0529;
+    }
+
+    .player-info.rank-5 .rank-badge {
+        background: rgba(26, 5, 41, 0.4);
+        color: #fff;
+        text-shadow: none;
+    }
+
+    /* Rank 6 - Pink */
+    .player-info.rank-6 {
+        background: linear-gradient(135deg, #ec407a 0%, #d81b60 50%, #ad1457 100%);
+        border-left-color: #880e4f;
+    }
+
+    .player-info.rank-6 h1,
+    .player-info.rank-6 p,
+    .player-info.rank-6 strong {
+        color: #2e0219;
+    }
+
+    .player-info.rank-6 .rank-badge {
+        background: rgba(46, 2, 25, 0.4);
+        color: #fff;
+        text-shadow: none;
+    }
 </style>
 
 <div class="container-flex">
     <div class="col-stats">
         <h2>Общее</h2>
-        <div class="player-info">
+        <div class="player-info rank-{{ player.get('rank', 0) }}">
+            <div class="rank-badge">Ранг {{ player.get('rank', 0) }}</div>
             <h1>{{ player.name }}</h1>
             <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
         </div>

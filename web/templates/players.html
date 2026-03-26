@@ -7,7 +7,8 @@
 {% if players %}
 <div class="players-grid">
     {% for player in players %}
-    <div class="player-card">
+    <div class="player-card rank-{{ player.get('rank', 0) }}">
+        <div class="rank-badge">Ранг {{ player.get('rank', 0) }}</div>
         <h3>{{ player.name }}</h3>
         <p><strong>Позиции:</strong> {{ player.positions|join(", ") }}</p>
         <div class="player-stats">
@@ -48,6 +49,26 @@
         padding: 20px;
         border-radius: 8px;
         border-left: 4px solid var(--accent-blue);
+        position: relative;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .player-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .rank-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: rgba(0, 0, 0, 0.3);
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #fff;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     }
 
     .player-stats {
@@ -80,6 +101,110 @@
     .player-actions .btn {
         flex: 1;
         text-align: center;
+    }
+
+    /* === RANK STYLES === */
+
+    /* Rank 0 - Default */
+    .rank-0 {
+        background: var(--bg-tertiary);
+        border-left-color: var(--accent-blue);
+    }
+
+    /* Rank 1 - Golden/Honey */
+    .rank-1 {
+        background: linear-gradient(135deg, #e4c201 0%, #ffb347 50%, #ffcc33 100%);
+        border-left-color: #ff8c00;
+    }
+
+    .rank-1 .stat-label,
+    .rank-1 .rank-badge {
+        color: #4a3c00;
+        text-shadow: none;
+    }
+
+    .rank-1 .stat-value {
+        color: #8b6914;
+    }
+
+    /* Rank 2 - Summer Grass Green */
+    .rank-2 {
+        background: linear-gradient(135deg, #7cb342 0%, #558b2f 50%, #689f38 100%);
+        border-left-color: #33691e;
+    }
+
+    .rank-2 .stat-label,
+    .rank-2 .rank-badge {
+        color: #1a3300;
+        text-shadow: none;
+    }
+
+    .rank-2 .stat-value {
+        color: #0d2600;
+    }
+
+    /* Rank 3 - Aegean/Aquamarine */
+    .rank-3 {
+        background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 50%, #00acc1 100%);
+        border-left-color: #00838f;
+    }
+
+    .rank-3 .stat-label,
+    .rank-3 .rank-badge {
+        color: #00363a;
+        text-shadow: none;
+    }
+
+    .rank-3 .stat-value {
+        color: #002629;
+    }
+
+    /* Rank 4 - Sunset Sea/Blue */
+    .rank-4 {
+        background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 50%, #1565c0 100%);
+        border-left-color: #0d47a1;
+    }
+
+    .rank-4 .stat-label,
+    .rank-4 .rank-badge {
+        color: #0a2350;
+        text-shadow: none;
+    }
+
+    .rank-4 .stat-value {
+        color: #051533;
+    }
+
+    /* Rank 5 - Purple */
+    .rank-5 {
+        background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 50%, #6a1b9a 100%);
+        border-left-color: #4a148c;
+    }
+
+    .rank-5 .stat-label,
+    .rank-5 .rank-badge {
+        color: #2a0a40;
+        text-shadow: none;
+    }
+
+    .rank-5 .stat-value {
+        color: #1a0529;
+    }
+
+    /* Rank 6 - Pink */
+    .rank-6 {
+        background: linear-gradient(135deg, #ec407a 0%, #d81b60 50%, #ad1457 100%);
+        border-left-color: #880e4f;
+    }
+
+    .rank-6 .stat-label,
+    .rank-6 .rank-badge {
+        color: #4a0529;
+        text-shadow: none;
+    }
+
+    .rank-6 .stat-value {
+        color: #2e0219;
     }
 </style>
 {% endblock %}
