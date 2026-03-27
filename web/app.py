@@ -29,21 +29,26 @@ def players():
         bonus = RANK_BONUS.get(rank, 0)
         skills = player.get("skills", {})
 
-        # === Эффективные навыки с учётом ранга ===
-        effective_skills = {k: v + bonus for k, v in skills.items()}
+        # === Белые навыки (нужны для расчёта бонуса) ===
+        white_skills = set()
+        if player.get("positions"):
+            for pos in player["positions"]:
+                if pos in POSITIONS:
+                    white_skills.update(POSITIONS[pos]["white_skills"])
+
+        # === Эффективные навыки: бонус ТОЛЬКО к белым ===
+        effective_skills = {}
+        for skill_id, base_value in skills.items():
+            if skill_id in white_skills:
+                effective_skills[skill_id] = base_value + bonus
+            else:
+                effective_skills[skill_id] = base_value
 
         if effective_skills:
             all_values = list(effective_skills.values())
             player["all_skills_avg"] = sum(all_values) / len(all_values)
         else:
             player["all_skills_avg"] = 0
-
-        # === Белые навыки с бонусом ===
-        white_skills = set()
-        if player.get("positions"):
-            for pos in player["positions"]:
-                if pos in POSITIONS:
-                    white_skills.update(POSITIONS[pos]["white_skills"])
 
         white_skill_values = [
             effective_skills[skill_id]
@@ -118,11 +123,28 @@ def player_detail(player_id):
     gray_skills = set(SKILLS.keys()) - white_skills
 
     if request.method == "POST":
+        # Нужно вычислить white_skills и bonus до сохранения
+        white_skills = set()
+        if player_data["positions"]:
+            for pos in player_data["positions"]:
+                if pos in POSITIONS:
+                    white_skills.update(POSITIONS[pos]["white_skills"])
+
+        rank = player_data.get("rank", 0)
+        bonus = RANK_BONUS.get(rank, 0)
+
         for skill in SKILLS.keys():
             val = request.form.get(skill)
             if val:
                 try:
-                    player_data["skills"][skill] = int(val)
+                    effective_value = int(val)
+                    # Вычитаем бонус ТОЛЬКО для белых навыков
+                    if skill in white_skills:
+                        base_value = effective_value - bonus
+                    else:
+                        base_value = effective_value
+                    base_value = max(1, min(1000, base_value))
+                    player_data["skills"][skill] = base_value
                 except ValueError:
                     pass
 
@@ -179,8 +201,13 @@ def player_detail(player_id):
 
     # Базовые навыки (из БД)
     base_skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
-    # Эффективные навыки (для отображения)
-    effective_skills = {k: v + bonus for k, v in base_skills.items()}
+    # Эффективные навыки: бонус ТОЛЬКО к белым
+    effective_skills = {}
+    for skill_id, base_value in base_skills.items():
+        if skill_id in white_skills:  # white_skills уже вычислен выше
+            effective_skills[skill_id] = base_value + bonus
+        else:
+            effective_skills[skill_id] = base_value
 
     player_obj = Player(
         name=player_data["name"],
@@ -205,7 +232,7 @@ def player_detail(player_id):
             }
         )
 
-    # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК (для начального отображения) ===
+    # === СИМУЛЯЦИЯ ПОСЛЕ ВСЕХ ТРЕНИРОВОК (с учётом бонуса ранга) ===
     simulated_skills_after = player_data["skills"].copy()
     for item in plan:
         for _ in range(item.repeats):
@@ -215,22 +242,25 @@ def player_detail(player_id):
                         400, simulated_skills_after[skill_id] + 1
                     )
 
-    after_all_vals = list(simulated_skills_after.values())
-    after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
+    # Добавляем бонус ТОЛЬКО к белым навыкам
+    after_all_vals = []
+    after_white_vals = []
+    after_gray_vals = []
+    for skill_id, sim_value in simulated_skills_after.items():
+        effective_value = sim_value + bonus if skill_id in white_skills else sim_value
+        after_all_vals.append(effective_value)
+        if skill_id in white_skills:
+            after_white_vals.append(effective_value)
+        else:
+            after_gray_vals.append(effective_value)
 
-    after_white_vals = [
-        simulated_skills_after[s] for s in white_skills if s in simulated_skills_after
-    ]
+    after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
     after_white_avg = (
         sum(after_white_vals) / len(after_white_vals) if after_white_vals else 0
     )
     after_white_diff = (
         max(after_white_vals) - min(after_white_vals) if after_white_vals else 0
     )
-
-    after_gray_vals = [
-        simulated_skills_after[s] for s in gray_skills if s in simulated_skills_after
-    ]
     after_gray_avg = (
         sum(after_gray_vals) / len(after_gray_vals) if after_gray_vals else 0
     )
@@ -259,6 +289,11 @@ def update_skills_and_get_data(player_id):
     if player_data is None:
         return "Player not found", 404
 
+    white_skills = set()
+    if player_data["positions"]:
+        for pos in player_data["positions"]:
+            white_skills.update(POSITIONS[pos]["white_skills"])
+
     rank = player_data.get("rank", 0)
     bonus = RANK_BONUS.get(rank, 0)
 
@@ -267,7 +302,11 @@ def update_skills_and_get_data(player_id):
         if val:
             try:
                 effective_value = int(val)
-                base_value = effective_value - bonus
+                # Вычитаем бонус ТОЛЬКО если навык белый
+                if skill in white_skills:
+                    base_value = effective_value - bonus
+                else:
+                    base_value = effective_value
                 base_value = max(1, min(1000, base_value))
                 player_data["skills"][skill] = base_value
             except ValueError:
@@ -284,11 +323,6 @@ def update_skills_and_get_data(player_id):
 
     player_data["training_count"] = training_count
     repo.update(player_data)
-
-    white_skills = set()
-    if player_data["positions"]:
-        for pos in player_data["positions"]:
-            white_skills.update(POSITIONS[pos]["white_skills"])
     gray_skills = set(SKILLS.keys()) - white_skills
 
     skills = {k: player_data["skills"].get(k, 1) for k in SKILLS}
@@ -322,7 +356,13 @@ def update_skills_and_get_data(player_id):
     weakest = sorted_white_skills[:3]
     strongest = list(reversed(sorted_white_skills[-3:]))
 
-    all_vals = [v + bonus for v in player_data["skills"].values()]
+    # all_vals: бонус ТОЛЬКО к белым
+    all_vals = []
+    for skill_id, base_value in player_data["skills"].items():
+        if skill_id in white_skills:
+            all_vals.append(base_value + bonus)
+        else:
+            all_vals.append(base_value)
     all_avg = sum(all_vals) / len(all_vals) if all_vals else 0
 
     white_vals = [
@@ -334,9 +374,7 @@ def update_skills_and_get_data(player_id):
     white_diff = max(white_vals) - min(white_vals) if white_vals else 0
 
     gray_vals = [
-        player_data["skills"][s] + bonus
-        for s in gray_skills
-        if s in player_data["skills"]
+        player_data["skills"][s] for s in gray_skills if s in player_data["skills"]
     ]
     gray_avg = sum(gray_vals) / len(gray_vals) if gray_vals else 0
 
@@ -350,22 +388,27 @@ def update_skills_and_get_data(player_id):
                         400, simulated_skills[skill_id] + 1
                     )
 
-    after_all_vals = [v + bonus for v in simulated_skills.values()]
-    after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
+    # После симуляции добавляем бонус ТОЛЬКО к белым
+    after_all_vals = []
+    after_white_vals = []
+    after_gray_vals = []
+    for skill_id, simulated_value in simulated_skills.items():
+        effective_value = (
+            simulated_value + bonus if skill_id in white_skills else simulated_value
+        )
+        after_all_vals.append(effective_value)
+        if skill_id in white_skills:
+            after_white_vals.append(effective_value)
+        else:
+            after_gray_vals.append(effective_value)
 
-    after_white_vals = [
-        simulated_skills[s] + bonus for s in white_skills if s in simulated_skills
-    ]
+    after_all_avg = sum(after_all_vals) / len(after_all_vals) if after_all_vals else 0
     after_white_avg = (
         sum(after_white_vals) / len(after_white_vals) if after_white_vals else 0
     )
     after_white_diff = (
         max(after_white_vals) - min(after_white_vals) if after_white_vals else 0
     )
-
-    after_gray_vals = [
-        simulated_skills[s] + bonus for s in gray_skills if s in simulated_skills
-    ]
     after_gray_avg = (
         sum(after_gray_vals) / len(after_gray_vals) if after_gray_vals else 0
     )
