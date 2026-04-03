@@ -4,6 +4,42 @@
 <h1>Игроки</h1>
 <p><a href="{{ url_for('new_player') }}" class="btn">Добавить игрока</a></p>
 
+<!-- === SORTING CONTROLS (COMPACT + VISIBLE) === -->
+<div class="sorting-controls">
+    <div class="sort-group">
+        <label for="sort-by">Сортировать:</label>
+        <select id="sort-by" class="sort-select" onchange="applySort()">
+            <option value="white_skill_diff" {% if sort_by=='white_skill_diff' %}selected{% endif %}>Разница белых
+            </option>
+            <option value="all_skills_avg" {% if sort_by=='all_skills_avg' %}selected{% endif %}>Среднее общее</option>
+            <option value="white_skills_avg" {% if sort_by=='white_skills_avg' %}selected{% endif %}>Среднее белых
+            </option>
+        </select>
+    </div>
+
+    <button id="sort-order" class="sort-order-btn" onclick="toggleSortOrder()" title="Изменить порядок (↑/↓)">
+        {% if sort_order == 'desc' %}
+        <svg class="arrow-icon arrow-down" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M19 12l-7 7-7-7" />
+        </svg>
+        <svg class="arrow-icon arrow-up" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+        </svg>
+        {% else %}
+        <svg class="arrow-icon arrow-up" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 19V5M5 12l7-7 7 7" />
+        </svg>
+        <svg class="arrow-icon arrow-down" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+            fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14M19 12l-7 7-7-7" />
+        </svg>
+        {% endif %}
+    </button>
+</div>
+
 {% if players %}
 <div class="players-grid">
     {% for player in players %}
@@ -62,11 +98,133 @@
 {% endif %}
 
 <style>
+    /* === SORTING CONTROLS (COMPACT + VISIBLE) === */
+    .sorting-controls {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        margin: 15px 0 25px;
+        padding: 10px 16px;
+        background: var(--bg-secondary, #f8f9fa);
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #dee2e6);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .sort-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .sort-group label {
+        font-weight: 700;
+        color: var(--text-primary, #212529);
+        font-size: 0.95rem;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    }
+
+    .sort-select {
+        padding: 7px 12px;
+        border: 2px solid var(--border-color, #ced4da);
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        background: var(--bg-tertiary, #ffffff);
+        color: var(--text-primary, #212529);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 150px;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .sort-select:hover {
+        border-color: var(--accent-blue, #007bff);
+        background: var(--bg-primary, #ffffff);
+    }
+
+    .sort-select:focus {
+        outline: none;
+        border-color: var(--accent-blue, #007bff);
+        box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    }
+
+    /* Fix for dropdown options visibility */
+    .sort-select option {
+        background: var(--bg-tertiary, #ffffff);
+        color: var(--text-primary, #212529);
+        padding: 8px 12px;
+        font-weight: 500;
+    }
+
+    /* === ARROW TOGGLE BUTTON === */
+    .sort-order-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        background: var(--bg-tertiary, #ffffff);
+        border: 2px solid var(--border-color, #ced4da);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        position: relative;
+        box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    }
+
+    .sort-order-btn:hover {
+        border-color: var(--accent-blue, #007bff);
+        background: var(--bg-primary, #ffffff);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .sort-order-btn:active {
+        transform: translateY(0);
+    }
+
+    .arrow-icon {
+        position: absolute;
+        transition: all 0.2s ease;
+        color: var(--text-primary, #495057);
+        stroke-width: 2.5;
+    }
+
+    /* Default state: desc (down active) */
+    .arrow-down {
+        opacity: 1;
+        transform: translateY(0);
+        color: var(--accent-blue, #007bff);
+        font-weight: bold;
+    }
+
+    .arrow-up {
+        opacity: 0.35;
+        transform: translateY(4px);
+    }
+
+    /* Asc state: up active */
+    .sort-order-btn.asc .arrow-up {
+        opacity: 1;
+        transform: translateY(0);
+        color: var(--accent-blue, #007bff);
+        font-weight: bold;
+    }
+
+    .sort-order-btn.asc .arrow-down {
+        opacity: 0.35;
+        transform: translateY(-4px);
+    }
+
+    /* === PLAYERS GRID === */
     .players-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 20px;
-        margin-top: 20px;
+        margin-top: 10px;
     }
 
     .player-card {
@@ -162,7 +320,7 @@
         font-size: 0.85rem;
     }
 
-    /* --- Main Button Styling (BALANCED) --- */
+    /* --- Main Button Styling --- */
     .player-actions {
         margin-top: 20px;
         width: 100%;
@@ -196,15 +354,19 @@
         filter: brightness(1.1);
     }
 
-    /* === RANK STYLES === */
-
-    /* Rank 0 - Default */
+    /* === RANK STYLES (with sorting controls) === */
     .rank-0 {
         background: var(--bg-tertiary);
         border-left-color: var(--accent-blue);
     }
 
-    /* Rank 1 - Golden/Honey */
+    .rank-0 .sort-select,
+    .rank-0 .sort-order-btn {
+        background: #fff;
+        border-color: #ced4da;
+        color: #212529;
+    }
+
     .rank-1 {
         background: linear-gradient(135deg, #e4c201 0%, #ffb347 50%, #ffcc33 100%);
         border-left-color: #ff8c00;
@@ -236,7 +398,7 @@
     }
 
     .rank-1 .player-rank-info {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         color: #1a1a1a;
     }
 
@@ -249,7 +411,17 @@
         background: #333;
     }
 
-    /* Rank 2 - Summer Grass Green */
+    .rank-1 .sort-select,
+    .rank-1 .sort-order-btn {
+        background: #fff9e6;
+        border-color: #e4c201;
+        color: #1a1a1a;
+    }
+
+    .rank-1 .sort-group label {
+        color: #1a1a1a;
+    }
+
     .rank-2 {
         background: linear-gradient(135deg, #7cb342 0%, #558b2f 50%, #689f38 100%);
         border-left-color: #33691e;
@@ -281,7 +453,7 @@
     }
 
     .rank-2 .player-rank-info {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         color: #0d2600;
     }
 
@@ -294,7 +466,17 @@
         background: #1b4d00;
     }
 
-    /* Rank 3 - Aegean/Aquamarine */
+    .rank-2 .sort-select,
+    .rank-2 .sort-order-btn {
+        background: #e8f5e9;
+        border-color: #7cb342;
+        color: #0d2600;
+    }
+
+    .rank-2 .sort-group label {
+        color: #0d2600;
+    }
+
     .rank-3 {
         background: linear-gradient(135deg, #4dd0e1 0%, #26c6da 50%, #00acc1 100%);
         border-left-color: #00838f;
@@ -326,7 +508,7 @@
     }
 
     .rank-3 .player-rank-info {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         color: #002629;
     }
 
@@ -339,7 +521,17 @@
         background: #004d52;
     }
 
-    /* Rank 4 - Sunset Sea/Blue */
+    .rank-3 .sort-select,
+    .rank-3 .sort-order-btn {
+        background: #e0f7fa;
+        border-color: #4dd0e1;
+        color: #002629;
+    }
+
+    .rank-3 .sort-group label {
+        color: #002629;
+    }
+
     .rank-4 {
         background: linear-gradient(135deg, #42a5f5 0%, #1e88e5 50%, #1565c0 100%);
         border-left-color: #0d47a1;
@@ -371,7 +563,7 @@
     }
 
     .rank-4 .player-rank-info {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         color: #051533;
     }
 
@@ -384,7 +576,17 @@
         background: #0a2a66;
     }
 
-    /* Rank 5 - Purple */
+    .rank-4 .sort-select,
+    .rank-4 .sort-order-btn {
+        background: #e3f2fd;
+        border-color: #42a5f5;
+        color: #051533;
+    }
+
+    .rank-4 .sort-group label {
+        color: #051533;
+    }
+
     .rank-5 {
         background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 50%, #6a1b9a 100%);
         border-left-color: #4a148c;
@@ -416,7 +618,7 @@
     }
 
     .rank-5 .player-rank-info {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         color: #1a0529;
     }
 
@@ -429,7 +631,17 @@
         background: #330a52;
     }
 
-    /* Rank 6 - Pink */
+    .rank-5 .sort-select,
+    .rank-5 .sort-order-btn {
+        background: #f3e5f5;
+        border-color: #ab47bc;
+        color: #1a0529;
+    }
+
+    .rank-5 .sort-group label {
+        color: #1a0529;
+    }
+
     .rank-6 {
         background: linear-gradient(135deg, #ec407a 0%, #d81b60 50%, #ad1457 100%);
         border-left-color: #880e4f;
@@ -461,7 +673,7 @@
     }
 
     .rank-6 .player-rank-info {
-        background: rgba(255, 255, 255, 0.3);
+        background: rgba(255, 255, 255, 0.4);
         color: #2e0219;
     }
 
@@ -473,5 +685,55 @@
     .rank-6 .btn-details:hover {
         background: #5c0432;
     }
+
+    .rank-6 .sort-select,
+    .rank-6 .sort-order-btn {
+        background: #fce4ec;
+        border-color: #ec407a;
+        color: #2e0219;
+    }
+
+    .rank-6 .sort-group label {
+        color: #2e0219;
+    }
+
+    @media (max-width: 600px) {
+        .sorting-controls {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 12px;
+        }
+
+        .sort-group {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .sort-select {
+            width: 100%;
+        }
+    }
 </style>
+
+<script>
+    function applySort() {
+        const sortBy = document.getElementById('sort-by').value;
+        const sortOrder = document.getElementById('sort-order').dataset.order || 'desc';
+        window.location.href = '{{ url_for('players') }}?sort_by=' + sortBy + '&sort_order=' + sortOrder;
+    }
+
+    function toggleSortOrder() {
+        const sortBy = document.getElementById('sort-by').value;
+        const currentOrder = document.getElementById('sort-order').dataset.order || 'desc';
+        const newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+        window.location.href = '{{ url_for('players') }}?sort_by=' + sortBy + '&sort_order=' + newOrder;
+    }
+
+    // Initialize button state
+    const orderBtn = document.getElementById('sort-order');
+    orderBtn.dataset.order = '{{ sort_order or "desc" }}';
+    if (orderBtn.dataset.order === 'asc') {
+        orderBtn.classList.add('asc');
+    }
+</script>
 {% endblock %}

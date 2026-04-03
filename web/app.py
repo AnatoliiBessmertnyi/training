@@ -21,6 +21,19 @@ def index():
 def players():
     players_data = repo.load_all()
 
+    # === ЧТЕНИЕ ПАРАМЕТРОВ СОРТИРОВКИ ===
+    sort_by = request.args.get("sort_by", "white_skill_diff")
+    sort_order = request.args.get("sort_order", "desc")
+
+    # Проверка валидности параметров
+    valid_sort_fields = ["white_skill_diff", "all_skills_avg", "white_skills_avg"]
+    if sort_by not in valid_sort_fields:
+        sort_by = "white_skill_diff"
+
+    if sort_order not in ["asc", "desc"]:
+        sort_order = "desc"
+    # ===================================
+
     # Бонусы ранга
     RANK_BONUS = {0: 0, 1: 10, 2: 30, 3: 50, 4: 80, 5: 120, 6: 160}
 
@@ -70,8 +83,13 @@ def players():
         # === Сохраняем бонус для отображения в шаблоне ===
         player["rank_bonus"] = bonus
 
-    players_data.sort(key=lambda p: p.get("white_skill_diff", 0), reverse=True)
-    return render_template("players.html", players=players_data)
+    # === СОРТИРОВКА ПО ВЫБРАННОМУ ПОЛЮ ===
+    players_data.sort(key=lambda p: p.get(sort_by, 0), reverse=(sort_order == "desc"))
+    # ==================================
+
+    return render_template(
+        "players.html", players=players_data, sort_by=sort_by, sort_order=sort_order
+    )
 
 
 @app.route("/players/new", methods=["GET", "POST"])
